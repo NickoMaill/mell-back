@@ -1,0 +1,15 @@
+# COMON FILES
+.DS_Store
+.vscode
+
+# MODULES
+node_modules
+
+# BUILD
+dist
+
+# LOCAL FILE
+*.local
+
+# LOGS FOLDER
+logs
