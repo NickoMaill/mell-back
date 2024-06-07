@@ -41,7 +41,7 @@ class Handlers {
             });
         } else {
             const error = err as Error;
-
+            console.log(err);
             logManager.error('AppErrorHandler', `${error.message} -> ${error.stack}`);
             res.status(500).json({
                 errorCode: 'internal_error',
@@ -49,6 +49,14 @@ class Handlers {
             });
         }
     }
+
+    public noCacheMiddleware(err: any, req: AppRequest, res: AppResponse, next: NextFunction) {
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+        res.set('Surrogate-Control', 'no-store');
+        next();
+    };
 }
 
 export default new Handlers();

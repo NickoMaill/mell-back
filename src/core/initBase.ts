@@ -2,11 +2,13 @@ import { Express } from 'express';
 import listEndpoints from 'express-list-endpoints';
 import configManager from '../managers/configManager';
 import logColors from '../helpers/logColors';
+import { DatabaseCore } from './dataBaseCore';
+import { StandardError } from './standardError';
 
 class InitBase {
     public initLogs(app: Express, PORT: number | string) {
         if (configManager.getConfig.NODE_ENV === 'development') {
-            console.log(logColors.BgGreen, logColors.FgBlack, "[Untel's Backend configuration loaded] ⚠️ local only ⚠️", logColors.Reload);
+            console.log(logColors.BgGreen, logColors.FgBlack, "[Mel's Backend configuration loaded] ⚠️ local only ⚠️", logColors.Reload);
             console.log('/////////////////////////////////////////////////////////', '\n');
 
             for (let variable in configManager.getConfig) {
@@ -16,7 +18,7 @@ class InitBase {
             console.log('\n______________________________________________________________\n');
             console.warn('');
 
-            listEndpoints(app).map((info) => {
+            listEndpoints(app).forEach((info) => {
                 if (info.path === '/') {
                     info.path = 'init';
                 }
@@ -24,16 +26,14 @@ class InitBase {
                 if (info.path === '*') {
                     info.path = 'error';
                 }
-
                 const nameRoute: string = `[${info.path.split('/')[0] !== 'init' && info.path.split('/')[0] !== 'error' ? info.path.split('/')[1] : info.path}]`;
-
                 console.info(`${nameRoute.padEnd(50, ' ')}`, logColors.FgYellow, `${info.methods[0].padEnd(10)}`, logColors.Reload, `${'⇨'.padEnd(10, ' ')} "${info.path}"`);
             });
-
+            const dateStr = new Date().toISOString();
             console.warn('');
-            console.warn(logColors.FgMagenta, `[${new Date().toISOString()}] ||===========================================||`, logColors.Reload);
-            console.warn(logColors.FgMagenta, `[${new Date().toISOString()}] `, logColors.Reload, logColors.BgGreen, 'Untel Official Website Backend startup...', logColors.Reload);
-            console.warn(logColors.FgMagenta, `[${new Date().toISOString()}] ||===========================================||`, logColors.Reload);
+            console.warn(logColors.FgMagenta, `[${dateStr}] ||===========================================||`, logColors.Reload);
+            console.warn(logColors.FgMagenta, `[${dateStr}] `, logColors.Reload, logColors.BgGreen, 'MELL Official Website Backend startup...', logColors.Reload);
+            console.warn(logColors.FgMagenta, `[${dateStr}] ||===========================================||`, logColors.Reload);
             console.warn('');
 
             if (configManager.getConfig.NODE_ENV === 'production') {
@@ -41,6 +41,14 @@ class InitBase {
             } else {
                 console.log(`listening on http://localhost:${PORT} ✅`);
             }
+            try {
+                const dbCore = new DatabaseCore();
+                
+                console.log(`Connected to DB ${dbCore.client.database ?? ""} ✅`)
+            } catch (err) {
+                throw new StandardError("initLogs", "FATAL", "no_db", "unable to connect to database", "", err);
+            }
+            
         }
     }
 }

@@ -6,5 +6,5 @@
     "events": {
         "crash": "kill-port 8000"
     },
-    "delay": 2000
+    "delay": 500
 }

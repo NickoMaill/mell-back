@@ -11,16 +11,20 @@ export type DataBaseAppError = DatabaseError;
 export class DatabaseCore {
     //#region Constructor
     protected readonly core: Pool;
-    private readonly client: Client;
+    public client: Client;
+    public isConnected: boolean;
     private readonly table: ApiTable;
     private readonly formatter: (sql: string, ...args: any[]) => string;
     private readonly customTableFormater: (sql: string, ...args: any[]) => string;
-    constructor(apiTable?: ApiTable) {
+    private readonly fields: string[] = [];
+    constructor(apiTable?: ApiTable, tableFields?: string[]) {
         this.core = new Pool({ ssl: configManager.sslConfig() });
         this.client = new Client();
-        this.client.connect();
+        this.client.connect()
+        .then(res =>{ this.isConnected = true; })
+        .catch(err => { this.isConnected = false; });
         this.table = apiTable;
-
+        this.fields = tableFields;
         format.config();
         this.formatter = (sql, ...args) => format(sql, apiTable, ...args);
         this.customTableFormater = (sql, ...args) => format(sql, args[0], apiTable, ...args.slice(1));
@@ -83,22 +87,14 @@ export class DatabaseCore {
         return true;
     }
 
-    protected async query<T>(sqlString: string, data: any[]) {
-        const queryResult = await this.databaseEngine<T>(sqlString, data);
+    protected async query<T>(sqlString: string, ...args: any) {
+        const queryResult = await this.databaseEngine<T>(sqlString, args);
         return queryResult;
     }
-
-    protected async validate<T>(payload: T) {}
-
-    // public async BackUpDatabase(pathToBackup?: string): Promise<void> {
-    //     const databaseName = await this.Query<{ current_database: string }>('SELECT current_database()', null);
-    //     this.Query('pg_dump --format=plain--file --create ~/Desktop/dump.sql ' + databaseName.rows[0].current_database, null);
-    // }
     //#endregion
 
     //#region Private
     private async databaseEngine<T>(queryString: string, data?: any[]): Promise<QueryResult<T>> {
-        console.log(queryString);
         try {
             return await this.core.query<T>(queryString, data ? data : null);
         } catch (error) {
@@ -208,7 +204,16 @@ export class DatabaseCore {
 
     private formatOutputData<T>(result: QueryResult, offset?: number, limit?: number): OutputQueryRequest<T> {
         const output: any = {
-            records: result.rows,
+            records: result.rows.map((record: any) => {
+                const formattedRecord: any = {};
+                for (const key in record) {
+                    const foundedField = this.fields.find(f => f.toLowerCase() === key.toLowerCase());
+                    if (foundedField) {
+                        formattedRecord[foundedField] = record[key];
+                    }
+                }
+                return formattedRecord;
+            }),
             totalRecords: 0,
         };
 

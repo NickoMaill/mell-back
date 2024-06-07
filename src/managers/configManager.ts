@@ -11,7 +11,17 @@ class ConfigManager {
         });
         this.__env = {
             NODE_ENV: process.env.NODE_ENV,
-            SHOW_ERROR_DETAILS: Boolean(process.env.SHOW_ERROR_DETAILS),
+            SHOW_ERROR_DETAILS: process.env.SHOW_ERROR_DETAILS === "true",
+            SECRET_REFRESH: process.env.APP_REFRESH_SECRET,
+            ACCESS_SECRET: process.env.APP_ACCESS_SECRET,
+            BREVO_APIKEY: process.env.APP_BREVO_APIKEY,
+            BREVO_LIST_ID: process.env.APP_BREVO_LIST_ID,
+            BREVO_ORDER_TEMPLATE_ID: process.env.APP_BREVO_ORDER_TEMPLATE_ID,
+            BREVO_SENDER: process.env.APP_BREVO_SENDER,
+            BREVO_USER_MAIL: process.env.APP_BREVO_USER_MAIL,
+            FRONT_BASEURL: process.env.APP_FRONT_BASEURL,
+            API_BASEURL: process.env.APP_API_BASEURL,
+            HTTPS: process.env.HTTPS === "true"
         };
     }
 

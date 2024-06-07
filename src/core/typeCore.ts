@@ -13,8 +13,14 @@ export type DeviceDataType = {
     clientSourceName: string;
 };
 
-export type BaseModel = {
-    id: number;
-    addedAt: Date;
-    updatedAt: Date;
+export class BaseModel {
+    public id: number;
+    public addedAt: Date;
+    public updatedAt: Date;
 };
+
+export enum UserAccessLevel {
+    ADMIN = 0,
+    USER = 1,
+    VISITOR = 2,
+}

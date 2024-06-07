@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <!-- MDB -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/7.2.0/mdb.min.css" rel="stylesheet" />
+    <title>Document</title>
+    <style>
+        .accordion-button-white::after {
+            filter: invert(100%) sepia(100%) saturate(2%) hue-rotate(200deg) brightness(105%) contrast(101%) !important;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3C!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--%3E%3Cpath d='M233.4 105.4c12.5-12.5 32.8-12.5 45.3 0l192 192c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L256 173.3 86.6 342.6c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3l192-192z'/%3E%3C/svg%3E") !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="w-50 bg-secondary-subtle p-3 m-2">
+        <div>
+            <p class="text-center text-black"><b>Désolé, une erreur est survenue.</b> Merci d'utiliser le formulaire
+                ci-dessous pour contacter <a class="text-decoration-underline" href="mailto:nicomaillols@gmail.com">le
+                    support technique</a>.
+                Nous travaillerons à corriger le problème dès que possible. Avec nos excuses pour le dérangement causé.
+            </p>
+            <p class="text-center text-black">Pour envoyer un message au support technique,<br>
+                <b class="text-danger">merci de décrire brièvement le problème dans la zone ci-dessous</b> puis cliquez
+                "<b>Envoyer Message</b>":
+            </p>
+        </div>
+        <form class="d-flex justify-content-center align-items-center flex-column" action="support/errorReport"
+            method="post">
+            <textarea class="w-100 my-3" rows="4" name="message" id="message"></textarea>
+            <input type="hidden" name="diag" id="diag" value="{0}">
+            <input type="hidden" name="source" id="source" value="{1}">
+            <input type="hidden" name="page" id="page" value="{2}">
+            <input type="hidden" name="date" id="date" value="{3}">
+            <input type="hidden" name="address" id="address" value="{4}">
+            <input type="hidden" name="date" id="date" value="{5}">
+            <button class="w-25 btn btn-primary " type="submit">Envoyer</button>
+        </form>
+        <div class="mt-3">
+            <div class="accordion" id="accordionExample">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button data-mdb-collapse-init
+                            class="accordion-button collapsed fw-bold bg-primary text-white accordion-button-white p-2 px-3"
+                            type="button" data-mdb-toggle="collapse" data-mdb-target="#collapseTwo"
+                            aria-expanded="false" aria-controls="collapseTwo">
+                            Rapport d'erreur
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
+                        data-mdb-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <table width="100%" cellspacing="1" cellpadding="3" class="table table-sm table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-bold">Diagnostic</td>
+                                        <td align="left">{0}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Source</td>
+                                        <td>{1}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Page</td>
+                                        <td>{2}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Date / Heure</td>
+                                        <td>{3}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold">Adresse</td>
+                                        <td>{4}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/7.3.0/mdb.umd.min.js"></script>
+</body>
+
+</html>

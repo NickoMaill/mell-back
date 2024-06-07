@@ -48,32 +48,32 @@ class ErrorHandlers {
             });
         }
     }
-    public errorSql(stack: string, err: DataBaseAppError) {
+    public errorSql(stack: string, err: DataBaseAppError, log: boolean = false) {
         if (err instanceof DatabaseError) {
             switch (err.code) {
                 case '23000':
-                    throw new StandardError(stack, 'BAD_REQUEST', 'integrity_constraint_violation', 'integrity constraint violation', err.message ? err.message : 'integrity constraint violation', err);
+                    throw new StandardError(stack, 'BAD_REQUEST', 'integrity_constraint_violation', 'integrity constraint violation', err.message ? err.message : 'integrity constraint violation', log, err);
                 case '23001':
-                    throw new StandardError(stack, 'BAD_REQUEST', 'restrict_violation', 'restrict violation', err.message ? err.message : 'restrict violation', err);
+                    throw new StandardError(stack, 'BAD_REQUEST', 'restrict_violation', 'restrict violation', err.message ? err.message : 'restrict violation', log, err);
                 case '23502':
-                    throw new StandardError(stack, 'BAD_REQUEST', 'not_null_violation', 'not null violation', err.message ? err.message : 'not null violation', err);
+                    throw new StandardError(stack, 'BAD_REQUEST', 'not_null_violation', 'not null violation', err.message ? err.message : 'not null violation', log, err);
                 case '23503':
-                    throw new StandardError(stack, 'BAD_REQUEST', 'foreign_key_violation', 'foreign key violation', err.message ? err.message : 'foreign key violation', err);
+                    throw new StandardError(stack, 'BAD_REQUEST', 'foreign_key_violation', 'foreign key violation', err.message ? err.message : 'foreign key violation', log, err);
                 case '23505':
-                    throw new StandardError(stack, 'BAD_REQUEST', 'uniq_violation', 'uniq error violation', err.message ? err.message : 'uniq error violation', err);
+                    throw new StandardError(stack, 'BAD_REQUEST', 'uniq_violation', 'uniq error violation', err.message ? err.message : 'uniq error violation', log, err);
                 case '23514':
-                    throw new StandardError(stack, 'BAD_REQUEST', 'check_violation', 'check error violation', err.message ? err.message : 'check error violation', err);
+                    throw new StandardError(stack, 'BAD_REQUEST', 'check_violation', 'check error violation', err.message ? err.message : 'check error violation', log, err);
                 case '42703':
-                    throw new StandardError(stack, 'BAD_REQUEST', 'invalid_column_reference', 'invalid column reference', err.message ? err.message : 'invalid column reference', err);
+                    throw new StandardError(stack, 'BAD_REQUEST', 'invalid_column_reference', 'invalid column reference', err.message ? err.message : 'invalid column reference', log, err);
                 case '42P01':
-                    throw new StandardError(stack, 'FATAL', 'undefined_table', 'no relation found', err.message ? err.message : 'undefined table', err);
+                    throw new StandardError(stack, 'FATAL', 'undefined_table', 'no relation found', err.message ? err.message : 'undefined table', log, err);
                 case '42P10':
-                    throw new StandardError(stack, 'FATAL', 'undefined_column', 'undefined column', err.message ? err.message : 'undefined column', err);
+                    throw new StandardError(stack, 'FATAL', 'undefined_column', 'undefined column', err.message ? err.message : 'undefined column', log, err);
                 default:
-                    throw new StandardError(stack, 'FATAL', `sql_code -> ${err.code}`, 'check error violation', err.message ? err.message : 'check error violation', err);
+                    throw new StandardError(stack, 'FATAL', `sql_code -> ${err.code}`, 'check error violation', err.message ? err.message : 'check error violation', log, err);
             }
         } else {
-            throw new StandardError(stack, 'FATAL', 'error_happened', 'an error happened during request', 'an error happened during request', err);
+            throw new StandardError(stack, 'FATAL', 'error_happened', 'an error happened during request', 'an error happened during request', log, err);
         }
     }
 }

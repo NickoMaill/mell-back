@@ -6,188 +6,17 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TABLE
-  public.movies (
-    id serial NOT NULL,
-    collectionid integer NULL,
-    title character varying(250) NULL,
-    subtitle character varying(100) NULL,
-    year integer NULL,
-    released timestamp without time zone NULL,
-    plot text NULL,
-    country character varying(3) NULL,
-    poster character varying(6000) NULL,
-    rating integer NULL,
-    views integer NULL,
-    filename character varying(250) NULL,
-    categoryId integer NULL,
-    isanime boolean NULL,
-    addedat timestamp without time zone NULL DEFAULT CURRENT_TIMESTAMP,
-    updatedat timestamp without time zone NULL
-  );
-
-ALTER TABLE public.movies ADD CONSTRAINT movies_pkey PRIMARY KEY (id);
-
-CREATE TABLE
-  public.categories (
-    id serial NOT NULL,
-    name character varying(150) NULL,
-    addedat timestamp without time zone NULL DEFAULT CURRENT_TIMESTAMP,
-    updatedat timestamp without time zone NULL,
-    externalname character varying(150) NULL
-  );
-
-ALTER TABLE public.categories ADD CONSTRAINT categories_pkey PRIMARY KEY (id);
-  
-CREATE TABLE
-  public.directors (
-    id serial NOT NULL,
-    name character varying(150) NULL,
-    addedat timestamp without time zone NULL DEFAULT CURRENT_TIMESTAMP,
-    updatedat timestamp without time zone NULL
-  );
-
-ALTER TABLE public.directors ADD CONSTRAINT directors_pkey PRIMARY KEY (id);
-
-CREATE TABLE
-  public.collections (
-    id serial NOT NULL,
-    title character varying(250) NULL,
-    picture character varying(100) NULL,
-    addedat timestamp without time zone NULL DEFAULT CURRENT_TIMESTAMP,
-    updatedat timestamp without time zone NULL
-  );
-
-ALTER TABLE
-  public.collections
-ADD
-  CONSTRAINT collections_pkey PRIMARY KEY (id);
-  
-  CREATE TABLE
-  public.actors (
-    id serial NOT NULL,
-    name character varying(150) NULL,
-    addedat timestamp without time zone NULL DEFAULT CURRENT_TIMESTAMP,
-    updatedat timestamp without time zone NULL
-  );
-
-ALTER TABLE
-  public.actors
-ADD
-  CONSTRAINT actors_pkey PRIMARY KEY (id);
-  CREATE TABLE
-  public.moviesactors (
-    id serial NOT NULL,
-    movieid integer NULL,
-    actorid integer NULL,
-    addedat timestamp without time zone NULL DEFAULT CURRENT_TIMESTAMP,
-    updatedat timestamp without time zone NULL
-  );
-
-ALTER TABLE
-  public.moviesactors
-ADD
-  CONSTRAINT moviesactors_pkey PRIMARY KEY (id);
-  
-  CREATE TABLE
-  public.moviescategories (
-    id serial NOT NULL,
-    movieid integer NULL,
-    categoryid integer NULL,
-    addedat timestamp without time zone NULL DEFAULT CURRENT_TIMESTAMP,
-    updatedat timestamp without time zone NULL
-  );
-
-ALTER TABLE
-  public.moviescategories
-ADD
-  CONSTRAINT moviescategories_pkey PRIMARY KEY (id);
-  
-  CREATE TABLE
-  public.moviesdirectors (
-    id serial NOT NULL,
-    movieid integer NULL,
-    directorid integer NULL,
-    addedat timestamp without time zone NULL DEFAULT CURRENT_TIMESTAMP,
-    updatedat timestamp without time zone NULL
-  );
-
-ALTER TABLE
-  public.moviesdirectors
-ADD
-  CONSTRAINT moviesdirectors_pkey PRIMARY KEY (id);
-  
-  CREATE TABLE
-  public.users (
-    id serial NOT NULL,
-    name character varying(150) NULL,
-    password character varying(5000) NULL,
-    isadmin boolean NULL DEFAULT false,
-    firstname character varying(250) NULL,
-    lastname character varying(250) NULL,
-    addedat timestamp without time zone NULL DEFAULT CURRENT_TIMESTAMP,
-    updatedat timestamp without time zone NULL
-  );
-
-ALTER TABLE
-  public.users
-ADD
-  CONSTRAINT users_pkey PRIMARY KEY (id);
-
-ALTER TABLE MoviesActors ADD CONSTRAINT fk_movie FOREIGN KEY(movieId) REFERENCES Movies(id);
-ALTER TABLE MoviesActors ADD CONSTRAINT fk_actor FOREIGN KEY(actorid) REFERENCES Actors(id);
-ALTER TABLE MoviesCategories ADD CONSTRAINT fk_movie FOREIGN KEY(movieId) REFERENCES Movies(id);
-ALTER TABLE MoviesCategories ADD CONSTRAINT fk_cate FOREIGN KEY(categoryId) REFERENCES Categories(id);
-ALTER TABLE MoviesDirectors ADD CONSTRAINT fk_movie FOREIGN KEY(movieId) REFERENCES Movies(id);
-ALTER TABLE MoviesDirectors ADD CONSTRAINT fk_director FOREIGN KEY(directorId) REFERENCES Directors(id);
-
-CREATE TRIGGER update_updatedAt
-    BEFORE UPDATE
-    ON actors
-    FOR EACH ROW
-EXECUTE PROCEDURE update_updatedAt();
-
-CREATE TRIGGER update_updatedAt
-    BEFORE UPDATE
-    ON categories
-    FOR EACH ROW
-EXECUTE PROCEDURE update_updatedAt();
-
-CREATE TRIGGER update_updatedAt
-    BEFORE UPDATE
-    ON collections
-    FOR EACH ROW
-EXECUTE PROCEDURE update_updatedAt();
-
-CREATE TRIGGER update_updatedAt
-    BEFORE UPDATE
-    ON directors
-    FOR EACH ROW
-EXECUTE PROCEDURE update_updatedAt();
-
-CREATE TRIGGER update_updatedAt
-    BEFORE UPDATE
-    ON movies
-    FOR EACH ROW
-EXECUTE PROCEDURE update_updatedAt();
-
-CREATE TRIGGER update_updatedAt
-    BEFORE UPDATE
-    ON moviesActors
-    FOR EACH ROW
-EXECUTE PROCEDURE update_updatedAt();
-
-CREATE TRIGGER update_updatedAt
-    BEFORE UPDATE
-    ON moviesCategories
-    FOR EACH ROW
-EXECUTE PROCEDURE update_updatedAt();
-
-CREATE TRIGGER update_updatedAt
-    BEFORE UPDATE
-    ON moviesDirectors
-    FOR EACH ROW
-EXECUTE PROCEDURE update_updatedAt();
+CREATE TABLE Users (
+	ID SERIAL PRIMARY KEY,
+  email VARCHAR(200) NOT NULL UNIQUE,
+  password VARCHAR(300),
+  lastname VARCHAR(100) NOT NULL;
+  firstname VARCHAR(100) NOT NULL;
+  mobile VARCHAR(20);
+  levelAccess INTEGER NOT NULL;
+  addedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TRIGGER update_updatedAt
     BEFORE UPDATE
@@ -195,6 +24,128 @@ CREATE TRIGGER update_updatedAt
     FOR EACH ROW
 EXECUTE PROCEDURE update_updatedAt();
 
-ALTER TABLE Directors ADD COLUMN image VARCHAR(2000);
-ALTER TABLE Actors ADD COLUMN image VARCHAR(2000);
-ALTER TABLE Movies ADD CONSTRAINT fk_cate FOREIGN KEY(categoryId) REFERENCES Categories(id);
+CREATE TABLE medias (
+
+);
+
+CREATE TABLE Calendar (
+	ID SERIAL PRIMARY KEY,
+  mediaId INTEGER,
+  title VARCHAR(400) NOT NULL,
+  place VARCHAR(400),
+  address VARCHAR(200) NOT NULL,
+  postalCode VARCHAR(5),
+  city VARCHAR(100),
+  country VARCHAR(100),
+  lat NUMERIC,
+  long NUMERIC,
+  startdate TIMESTAMP NOT NULL,
+  endDate TIMESTAMP,
+  Schedule TIME,
+  AddedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UpdatedAt TIMESTAMP,
+  CONSTRAINT fk_media FOREIGN KEY (mediaId) REFERENCES medias(id)
+);
+
+CREATE TRIGGER update_updatedAt
+    BEFORE UPDATE
+    ON Calendar
+    FOR EACH ROW
+EXECUTE PROCEDURE update_updatedAt();
+
+CREATE TABLE Tokens (
+	ID SERIAL PRIMARY KEY,
+  UserId INTEGER,
+  token VARCHAR(1000),
+  deviceId UUID,
+  userAgent TEXT,
+  lastUsed TIMESTAMP,
+  userIp VARCHAR(30),
+  ADDEDAT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UpdatedAt TIMESTAMP,
+  CONSTRAINT fk_user FOREIGN KEY (userId) REFERENCES users(id)
+);
+
+CREATE TRIGGER update_updatedAt
+    BEFORE UPDATE
+    ON tokens
+    FOR EACH ROW
+EXECUTE PROCEDURE update_updatedAt();
+
+CREATE TABLE DataText (
+	ID SERIAL PRIMARY KEY,
+  type VARCHAR(50) NOT NULL,
+  description VARCHAR(1000) NOT NULL,
+  code VARCHAR(10) NOT NULL,
+  sortOrder INTEGER,
+  AddedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UpdatedAt TIMESTAMP
+);
+
+CREATE TRIGGER update_updatedAt
+    BEFORE UPDATE
+    ON DataText
+    FOR EACH ROW
+EXECUTE PROCEDURE update_updatedAt();
+
+CREATE TABLE Comments (
+	ID SERIAL PRIMARY KEY,
+  showId INTEGER,
+	name VARCHAR(200),
+  title VARCHAR(200),
+  rating INTEGER,
+  descrition TEXT,
+  AddedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UpdatedAt TIMESTAMP,
+  CONSTRAINT fk_show FOREIGN KEY (showId) REFERENCES shows(id)
+);
+
+CREATE TRIGGER update_updatedAt
+    BEFORE UPDATE
+    ON Comments
+    FOR EACH ROW
+EXECUTE PROCEDURE update_updatedAt();
+
+CREATE TABLE Subscribers (
+	ID SERIAL PRIMARY KEY,
+  email VARCHAR(300) NOT NULL UNIQUE,
+  phoneNumber VARCHAR(12),
+  firstName VARCHAR(100),
+  lastName VARCHAR(100),
+  city VARCHAR(100),
+  country VARCHAR(100),
+  lat NUMERIC,
+  long NUMERIC,
+  AddedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UpdatedAt TIMESTAMP
+);
+
+CREATE TRIGGER update_updatedAt
+    BEFORE UPDATE
+    ON Subscribers
+    FOR EACH ROW
+EXECUTE PROCEDURE update_updatedAt();
+
+CREATE TABLE Logs (
+	ID SERIAL PRIMARY KEY,
+  action VARCHAR(200) NOT NULL,
+  description TEXT,
+  target VARCHAR(50),
+  call VARCHAR(100),
+  AddedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UpdatedAt TIMESTAMP
+);
+
+CREATE TRIGGER update_updatedAt
+    BEFORE UPDATE
+    ON Logs
+    FOR EACH ROW
+EXECUTE PROCEDURE update_updatedAt();
+
+ALTER TABLE Logs ADD COLUMN userId INTEGER;
+ALTER TABLE Logs ADD CONSTRAINT fk_user FOREIGN KEY (userId) REFERENCES Users(id);
+
+ALTER TABLE Users ADD COLUMN lastname VARCHAR(100) NOT NULL;
+ALTER TABLE Users ADD COLUMN firstname VARCHAR(100) NOT NULL;
+ALTER TABLE Users ADD COLUMN mobile VARCHAR(20);
+ALTER TABLE Users ADD COLUMN levelAccess INTEGER NOT NULL;

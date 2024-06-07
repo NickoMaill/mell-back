@@ -1,3 +1,7 @@
+import { CookieOptions } from "express";
+import { machineIdSync } from "node-machine-id";
+import configManager from "~/managers/configManager";
+
 class Tools {
     public parseQuery(queries: any): any {
         for (const query in queries) {
@@ -29,6 +33,28 @@ class Tools {
             hour: value * 60 * 60 * 1000,
             day: value * 24 * 60 * 60 * 1000,
         };
+    }
+    public generateOtp(): string {
+        const minCeiled = Math.ceil(100000);
+        const maxFloored = Math.floor(999999);
+        const opt = Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled).toString();
+        return opt;
+    }
+
+    public getDeviceId() {
+        const id = machineIdSync(true);
+        return id;
+    }
+
+    public getCookieOptions(expires: Date): CookieOptions {
+        const options: CookieOptions = {
+            expires,
+            httpOnly: true,
+            secure: configManager.getConfig.HTTPS,
+            sameSite: 'strict',
+            domain: "localhost"
+        };
+        return options;
     }
 }
 

@@ -30,13 +30,8 @@ export type DatabaseCoreQuery<T = any> = {
 };
 
 export enum ApiTable {
-    ACTORS = 'actors',
-    CATEGORIES = 'categories',
-    COLLECTIONS = 'collections',
-    DIRECTORS = 'directors',
-    MOVIES = 'movies',
-    MOVIES_ACTORS = 'moviesactors',
-    MOVIES_CATEGORIES = 'moviescategories',
-    MOVIES_DIRECTORS = 'moviesdirectors',
-    USERS = 'users',
+    MEDIAS = "medias",
+    USERS = "users",
+    LOGS = "logs",
+    SHOWS = "shows"
 }

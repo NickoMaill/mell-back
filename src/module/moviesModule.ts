@@ -2,40 +2,41 @@ import { ApiTable, DatabaseCoreQuery } from '~/core/coreApiTypes';
 import { DatabaseCore } from '~/core/dataBaseCore';
 import { ModuleBase } from '~/core/moduleBase';
 import { OutputQueryRequest } from '~/core/typeCore';
-import { MoviePayload, Movie } from '~/models/movies';
+import { ShowPayloadType } from '~/models/shows';
+import { Show } from '~/models/shows';
 
-class MoviesModule extends DatabaseCore implements ModuleBase<Movie, MoviePayload> {
-    constructor() {
-        super(ApiTable.MOVIES);
+class ShowsModule extends DatabaseCore implements ModuleBase<Show, ShowPayloadType> {
+    constructor(obj: Show) {
+        super(ApiTable.SHOWS, Object.keys(obj));
     }
 
     // public --> start region /////////////////////////////////////////////
-    protected override async validate<T>(payload: T): Promise<void> {
+    // protected override async validate<T>(payload: T): Promise<void> {
         
-    }
-    public async add(dataToInsert: MoviePayload): Promise<boolean> {
+    // }
+    public async add(dataToInsert: ShowPayloadType): Promise<boolean> {
         await this.insert(dataToInsert);
         return true;
     }
 
-    public async update(payload: MoviePayload, id: number): Promise<boolean> {
-        const queryClause: DatabaseCoreQuery<Movie> = { update: payload, where: { equals: { id: id } } };
+    public async update(payload: ShowPayloadType, id: number): Promise<boolean> {
+        const queryClause: DatabaseCoreQuery<Show> = { update: payload, where: { equals: { id: id } } };
         await this.updateRecord(queryClause);
         return true;
     }
 
-    public async getOne(id: number): Promise<OutputQueryRequest<Movie>> {
-        const result = this.getById<Movie>(id);
+    public async getOne(id: number): Promise<OutputQueryRequest<Show>> {
+        const result = this.getById<Show>(id);
         return result;
     }
 
-    public async getAny(where: DatabaseCoreQuery<Movie>): Promise<OutputQueryRequest<Movie>> {
+    public async getAny(where: DatabaseCoreQuery<Show>): Promise<OutputQueryRequest<Show>> {
         const results = this.getByQuery(where);
         return results;
     }
 
-    public async getAllTable(): Promise<OutputQueryRequest<Movie>> {
-        const results = this.getAll<Movie>();
+    public async getAllTable(): Promise<OutputQueryRequest<Show>> {
+        const results = this.getAll<Show>();
         return results;
     }
     // public --> end region ///////////////////////////////////////////////
@@ -43,4 +44,4 @@ class MoviesModule extends DatabaseCore implements ModuleBase<Movie, MoviePayloa
     // private --> start region ////////////////////////////////////////////
     // private --> end region //////////////////////////////////////////////
 }
-export default new MoviesModule();
+export default new ShowsModule(new Show());
