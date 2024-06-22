@@ -24,3 +24,12 @@ export enum UserAccessLevel {
     USER = 1,
     VISITOR = 2,
 }
+
+export function AccessLevel(level: UserAccessLevel): MethodDecorator {
+    return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+        if (!target.__accessLevels) {
+            target.__accessLevels = {};
+        }
+        target.__accessLevels[propertyKey] = level;
+    }
+}

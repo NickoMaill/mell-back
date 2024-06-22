@@ -17,8 +17,8 @@ class ErrorHandlers {
         if (err instanceof StandardError) {
             const error = err as StandardError<any>;
 
-            logManager.error(error.key, `-> [${error.errorCode}] : ${error.message} -> ${error.detailedMessage}`);
-            logManager.error(error.key, `-> [${error.errorCode}] : ${error.stack}`);
+            logManager.setLog(error.key, `-> [${error.errorCode}] : ${error.message} -> ${error.detailedMessage}`);
+            logManager.setLog(error.key, `-> [${error.errorCode}] : ${error.stack}`);
 
             if (!res.headersSent) {
                 let statusCode: number;
@@ -33,7 +33,7 @@ class ErrorHandlers {
         } else if (err instanceof HttpError) {
             const error = err as Error;
 
-            logManager.error('AppErrorHandler', `${(err as Error).message} -> ${(err as Error).stack}`);
+            logManager.setLog('AppErrorHandler', `${(err as Error).message} -> ${(err as Error).stack}`);
             res.status(err.status).json({
                 errorCode: 'http_error',
                 message: configManager.getConfig.SHOW_ERROR_DETAILS ? error.message : `Internal Server Error!`,
@@ -41,7 +41,7 @@ class ErrorHandlers {
         } else {
             const error = err as Error;
 
-            logManager.error('AppErrorHandler', `${error.message} -> ${error.stack}`);
+            logManager.setLog('AppErrorHandler', `${error.message} -> ${error.stack}`);
             res.status(500).json({
                 errorCode: 'internal_error',
                 message: configManager.getConfig.SHOW_ERROR_DETAILS ? error.message : `Internal Server Error!`,
@@ -70,7 +70,7 @@ class ErrorHandlers {
                 case '42P10':
                     throw new StandardError(stack, 'FATAL', 'undefined_column', 'undefined column', err.message ? err.message : 'undefined column', log, err);
                 default:
-                    throw new StandardError(stack, 'FATAL', `sql_code -> ${err.code}`, 'check error violation', err.message ? err.message : 'check error violation', log, err);
+                    throw new StandardError(stack, 'FATAL', `sql_code -> ${err.code}`, 'Database error', err.message ? err.message : 'Database error', log, err);
             }
         } else {
             throw new StandardError(stack, 'FATAL', 'error_happened', 'an error happened during request', 'an error happened during request', log, err);

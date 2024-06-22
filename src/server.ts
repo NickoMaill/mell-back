@@ -1,4 +1,4 @@
-import express, { Response } from 'express';
+import express from 'express';
 import path from 'path';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -19,23 +19,29 @@ import { initSes } from './middlewares/session';
 import { checkAuth } from './middlewares/auth';
 import moment from 'moment';
 import showsController from './controllers/showsController';
+import socialMediaController from './controllers/socialMediaController';
+import logController from './controllers/logController';
+import { DatabaseCore } from './core/dataBaseCore';
 
-const app = express();
+const server = express();
 const PORT = process.env.PORT || 8000 || 8001;
 
 // #region MIDDLEWARE -> //////////////////////////////////////////
+// (async () => {
+//     await new DatabaseCore().disconnectAll();
+// })
 moment.locale("fr");
-app.use(express.json({ limit: '10mb' }));
-app.use(express.static('public'));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(cors({
+server.use(express.json({ limit: '10mb' }));
+server.use(express.static('public'));
+server.use(express.urlencoded({ extended: true, limit: '10mb' }));
+server.use(cors({
     origin: 'http://localhost:3000',
     credentials: true
   }));
-app.use(cookieParser());
-app.use(morgan('dev'));
-app.use(sanitizeXss);
-app.use(helmet.contentSecurityPolicy({
+server.use(cookieParser());
+server.use(morgan('dev'));
+server.use(sanitizeXss);
+server.use(helmet.contentSecurityPolicy({
     directives: {
         scriptSrc: [
             "'self'", 
@@ -46,38 +52,40 @@ app.use(helmet.contentSecurityPolicy({
         ],
     }
 }));
-app.use(session({
+server.use(session({
     secret: uuid().replaceAll("-", ""),
     resave: false,
     saveUninitialized: true,
     cookie: { secure: "auto", httpOnly: true, }
 }));
-app.use(initSes);
+server.use(initSes);
 // #endregion -> /////////////////////////////////////////////////
 
 // #region WATCHDOG -> ///////////////////////////////////////////
 // #endregion -> /////////////////////////////////////////////////
 
 // #region ROUTES -> /////////////////////////////////////////////
-app.use('/init', defaultController.Router);
-app.use('/login', handlers.noCacheMiddleware, checkAuth, adminController.Router);
-app.use('/medias', mediasController.Router);
-app.use('/shows', showsController.Router);
+server.use('/init', defaultController.Router);
+server.use('/login', handlers.noCacheMiddleware, checkAuth, adminController.Router);
+server.use('/medias', mediasController.Router);
+server.use('/shows', showsController.router);
+server.use('/social', socialMediaController.router);
+server.use('/logs', logController.router);
 // #endregion -> /////////////////////////////////////////////////
 
 // #region COMMONS ROUTES -> /////////////////////////////////////
-app.get('/', (_req: AppRequest, res: AppResponse) => {
+server.get('/', (_req: AppRequest, res: AppResponse) => {
     if (res.contentType('html')) {
         res.sendFile(path.join(__dirname, '/views/defaultPage.html'));
     } else {
         res.json({ message: 'Welcome to Mell\'s website api' });
     }
 });
-app.get("/test", async (_req: AppRequest, res: AppResponse) => {
+server.get("/test", async (_req: AppRequest, res: AppResponse) => {
     // await communicationManager.sendMfa("nicomaillols@gmail.com", "076543");
     res.json(true);
 });
-app.get('*', (_req: AppRequest, res: AppResponse) => {
+server.get('*', (_req: AppRequest, res: AppResponse) => {
     if (res.contentType('html')) {
         res.status(404).sendFile(path.join(__dirname, '/views/404.html'));
     } else {
@@ -87,9 +95,9 @@ app.get('*', (_req: AppRequest, res: AppResponse) => {
 // #endregion -> /////////////////////////////////////////////////
 
 // #region ERROR HANDLERS -> /////////////////////////////////////
-app.use(handlers.errorHandler);
+server.use(handlers.errorHandler);
 // #endregion -> /////////////////////////////////////////////////
 
 // #region SERVER INIT -> ////////////////////////////////////////
-app.listen(PORT, () => initBase.initLogs(app, PORT));
+server.listen(PORT, () => initBase.initLogs(server, PORT));
 // #endregion -> /////////////////////////////////////////////////

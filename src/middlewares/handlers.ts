@@ -5,12 +5,13 @@ import logManager from '../managers/logManager';
 import { StandardError } from '../core/standardError';
 import { AppRequest, AppResponse } from '../core/controllerBase';
 class Handlers {
-    public async errorHandler(err: any, req: AppRequest, res: AppResponse, next: NextFunction) {
+    public async errorHandler(err: any, _req: AppRequest, res: AppResponse, _next: NextFunction) {
+        console.log("error handler", err);
         if (err instanceof StandardError) {
             const error = err as StandardError<any>;
 
-            logManager.error(error.key, `-> [${error.errorCode}] : ${error.message} -> ${error.detailedMessage}`);
-            logManager.error(error.key, `-> [${error.errorCode}] : ${error.stack}`);
+            logManager.setLog(error.key, `-> [${error.errorCode}] : ${error.message} -> ${error.detailedMessage}`);
+            logManager.setLog(error.key, `-> [${error.errorCode}] : ${error.stack}`);
 
             if (!res.headersSent) {
                 let statusCode: number;
@@ -34,15 +35,14 @@ class Handlers {
         } else if (err instanceof HttpError) {
             const error = err as Error;
 
-            logManager.error('AppErrorHandler', `${(err as Error).message} -> ${(err as Error).stack}`);
+            logManager.setLog('AppErrorHandler', `${(err as Error).message} -> ${(err as Error).stack}`);
             res.status(err.status).json({
                 errorCode: 'http_error',
                 message: configManager.getConfig.SHOW_ERROR_DETAILS ? error.message : `Internal Server Error!`,
             });
         } else {
             const error = err as Error;
-            console.log(err);
-            logManager.error('AppErrorHandler', `${error.message} -> ${error.stack}`);
+            logManager.setLog('AppErrorHandler', `${error.message} -> ${error.stack}`);
             res.status(500).json({
                 errorCode: 'internal_error',
                 message: configManager.getConfig.SHOW_ERROR_DETAILS ? error.message : `Internal Server Error!`,

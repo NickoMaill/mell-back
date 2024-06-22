@@ -1,30 +1,21 @@
-import { ApiTable, DatabaseCoreQuery } from "~/core/coreApiTypes";
+import { ApiTable, DatabaseCoreQuery, QuerySearch } from "~/core/coreApiTypes";
 import { DatabaseCore } from "~/core/dataBaseCore";
 import { ModuleBase } from "~/core/moduleBase";
-import { OutputQueryRequest } from "~/core/typeCore";
+import { OutputQueryRequest, UserAccessLevel } from "~/core/typeCore";
 import { Log, LogPayload } from "~/models/logs";
+import Table from "./table";
 
-class LogsModule extends DatabaseCore implements ModuleBase<Log, LogPayload> {
-    constructor(obj: Log) {
-        super(ApiTable.LOGS, Object.keys(obj));
-    }
-
-    public async getOne(id: number): Promise<OutputQueryRequest<Log>> {
-        const log = await this.getById<Log>(id);
-        return log;
-    }
-    public async getAllTable() {
-        const logs = await this.getAll<Log>();
-        return logs;
-    }
-    public async getAny (query: DatabaseCoreQuery<Log>): Promise<OutputQueryRequest<Log>> {
-        const logs = await this.getByQuery(query);
-        return logs;
-    }
-    public async add(payload: LogPayload): Promise<boolean> {
-        await this.insert(payload);
-        return true;
-    }
+class LogsModule extends Table<Log, null> {
+    protected override Table = ApiTable.LOGS;
+    protected override Level = UserAccessLevel.ADMIN;
+    protected override SearchContent: QuerySearch<Log>[] = [
+        { field: "addedAt", dbField: "addedAt", typeWhere: "EQUALS", typeClause: "EQUALS"},
+        { field: "description", dbField: "description", typeWhere: "LIKE", typeClause: "EQUALS"},
+        { field: "action", dbField: "action", typeWhere: "LIKE", typeClause: "EQUALS"},
+    ];
+    protected override DefaultSort: keyof Log = "addedAt";
+    protected override DefaultAsc: boolean = false;
+    protected override SqlFields: string[] = Object.keys(new Log());
 }
 
-export default new LogsModule(new Log());
+export default LogsModule;

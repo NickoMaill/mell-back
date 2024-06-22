@@ -39,7 +39,7 @@ class AdminController {
                 res.redirect("/login/mfa");
             }
         } catch (err) {
-            let out = '';
+            let out = `<p>une erreur est survenue, désolé... <br> details de l'erreur : ${JSON.stringify(err)}</p>`;
             if (err instanceof StandardError) {
                 if (err.errorCode === 'invalid_credentials') {
                     out = adminManager.setInvalidLoginForm('Email ou mot de passe invalide', req.body.username);

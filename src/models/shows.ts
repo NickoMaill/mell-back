@@ -26,6 +26,7 @@ export type ShowPayloadType = {
     startDate: Date;
     endDate: Date;
     schedule: Date;
+    showUrl: string;
 }
 
 export class Comment extends BaseModel {
@@ -42,4 +43,5 @@ export type CommentPayload = {
     title: string;
     rating: number;
     description: string;
+    date: Date;
 }

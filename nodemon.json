@@ -2,7 +2,7 @@
     "watch": ["**/*", ".env"],
     "ext": "ts",
     "ignore": ["**/*.spec.ts", "node_modules", "documentation", "tests/**/*.ts", "*.json"],
-    "exec": "kill-port 8000 && ts-node -r tsconfig-paths/register ./src/app.ts",
+    "exec": "kill-port 8000 && ts-node -r tsconfig-paths/register ./src/server.ts",
     "events": {
         "crash": "kill-port 8000"
     },

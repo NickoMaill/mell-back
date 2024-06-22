@@ -49,7 +49,6 @@ export class StandardError<T extends any = {}> extends Error {
     public get data() {
         return this._data;
     }
-
     constructor(key: string, status: ErrorStatusType, errorCode: string, message: string, detailedMessage: string | null = null, log: boolean = false, data: T | null = null) {
         super(message);
 

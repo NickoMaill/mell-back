@@ -2,8 +2,7 @@ import path from 'path';
 import winston from 'winston';
 import configManager from './configManager';
 import Ses from '~/core/ses';
-import logsModule from '~/module/logsModule';
-import { LogPayload } from '~/models/logs';
+import App from '~/core/appCore';
 
 const logPath = path.join(path.resolve(__dirname, configManager.getConfig.NODE_ENV === 'development' ? '../../' : '.'), 'logs');
 const logFormat = winston.format.printf(({ level, label, message, timestamp }) => {
@@ -21,35 +20,15 @@ if (configManager.getConfig.NODE_ENV === 'development') {
 }
 
 class LogManager {
-    public debug(key: string, message: string): void {
-        logger.debug(message, { label: key }, 'debug');
-    }
-    public verbose(key: string, message: string): void {
-        logger.verbose(message, { label: key }, 'verbose');
-    }
-    public info(key: string, message: string): void {
-        logger.info(message, { label: key }, 'info');
-    }
-    public warn(key: string, message: string): void {
-        logger.warn(message, { label: key }, 'warn');
-    }
-    public error(key: string, message: string): void {
-        logger.error(message, { label: key }, 'error');
-    }
     public async setLog(action: string, description: string): Promise<void>;
     public async setLog(action: string, description: string, call?: string): Promise<void>;
     public async setLog(action: string, description: string, call?: string, target?: string): Promise<void>;
     public async setLog(action: string, description: string, call?: string, target?: string): Promise<void> {
         const ses = Ses.getInstance();
-        const payload: LogPayload = {
-            action,
-            description,
-            target,
-            call,
-            userId: ses.UID,
-            ipAddress: ses.IpAddress
-        }
-        await logsModule.add(payload);
+        App.query(
+            "INSERT INTO Logs (action, description, target, call, userId, ipAddress) VALUES ($1, $2, NULLIF($3, ''), $4, $5, $6)",
+            action, description, target, call, ses.UID, ses.IpAddress
+        );
     }
 }
 

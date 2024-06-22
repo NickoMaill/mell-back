@@ -1,51 +1,53 @@
 import configManager from '~/managers/configManager';
-import { Client, DatabaseError, Pool, QueryResult } from 'pg';
+import { Client, DatabaseError, Pool, PoolClient, QueryResult } from 'pg';
 import format from 'pg-format';
 import { ApiTable, DatabaseCoreQuery, InsertFormatOut, ParamsType } from '~/core/coreApiTypes';
 import { OutputQueryRequest } from './typeCore';
 import errorHandlers from './errorHandlers';
-import tools from '~/helpers/tools';
 
 export type DataBaseAppError = DatabaseError;
 
 export class DatabaseCore {
     //#region Constructor
-    protected readonly core: Pool;
+    public readonly core: Pool;
     public client: Client;
-    public isConnected: boolean;
+    public isConnected: boolean = true;
     private readonly table: ApiTable;
     private readonly formatter: (sql: string, ...args: any[]) => string;
     private readonly customTableFormater: (sql: string, ...args: any[]) => string;
     private readonly fields: string[] = [];
+    protected queryObj: DatabaseCoreQuery = {};
     constructor(apiTable?: ApiTable, tableFields?: string[]) {
-        this.core = new Pool({ ssl: configManager.sslConfig() });
-        this.client = new Client();
-        this.client.connect()
-        .then(res =>{ this.isConnected = true; })
-        .catch(err => { this.isConnected = false; });
+        this.core = new Pool({
+            ssl: configManager.sslConfig(),
+            connectionTimeoutMillis: 2000,
+            idleTimeoutMillis: 30000,
+            max: 20,
+            allowExitOnIdle: true,
+        });
         this.table = apiTable;
         this.fields = tableFields;
+        this.client = new Client();
         format.config();
         this.formatter = (sql, ...args) => format(sql, apiTable, ...args);
         this.customTableFormater = (sql, ...args) => format(sql, args[0], apiTable, ...args.slice(1));
     }
     //#endregion
-
     //#region Protected
-    protected async getAll<T>(): Promise<OutputQueryRequest<T>> {
+    public async getAll<T>(): Promise<OutputQueryRequest<T>> {
         const result = await this.databaseEngine<T>(this.formatter('SELECT *, count(*) OVER() AS "totalRecords" FROM %I'));
         return this.formatOutputData(result);
     }
 
-    protected async getById<T>(id: number): Promise<OutputQueryRequest<T>> {
+    public async getById<T>(id: number): Promise<OutputQueryRequest<T>> {
         const result = await this.databaseEngine<T>(this.formatter('SELECT *, count(*) OVER() AS "totalRecords" FROM %I WHERE id = $1'), [id]);
         return this.formatOutputData<T>(result);
     }
 
-    protected async getByQuery<T>(query: DatabaseCoreQuery<T>): Promise<OutputQueryRequest<T>> {
+    public async getByQuery<T>(query: DatabaseCoreQuery<T>): Promise<OutputQueryRequest<T>> {
         const queryFormat = this.queryString(query);
         const orderMode = query.asc ? 'ASC' : 'DESC';
-
+        const args = [];
         if (!query.offset) {
             query.offset = 0;
         }
@@ -53,52 +55,69 @@ export class DatabaseCore {
         if (!query.limit) {
             query.limit = 10;
         }
-
-        let SQLString = this.customTableFormater('SELECT %s FROM %I WHERE %s OFFSET %s LIMIT %s', queryFormat.select, queryFormat.where, query.offset, query.limit);
-
+        let baseSql = 'SELECT %s FROM %I';
+        args.push(queryFormat.select);
         if (queryFormat.join.length > 0) {
-            SQLString = this.customTableFormater('SELECT %s FROM %I %s WHERE %s OFFSET %s LIMIT %s', queryFormat.select, queryFormat.join, queryFormat.where, query.offset, query.limit);
+            baseSql += ' ‰s';
+            args.push(queryFormat.join);
         }
-
+        if (queryFormat.where.length > 0) {
+            baseSql += ' WHERE %s';
+            args.push(queryFormat.where);
+        }
         if (query.order) {
-            SQLString = this.customTableFormater('SELECT %s FROM %I %s WHERE %s ORDER BY %I %s OFFSET %s LIMIT %s', queryFormat.select, queryFormat.join, queryFormat.where, query.order, orderMode, query.offset, query.limit);
+            baseSql += ' ORDER BY %I %s';
+            args.push(query.order.toString().toLowerCase(), orderMode);
         }
+        baseSql += ' OFFSET %s LIMIT %s';
+        args.push(query.offset, query.limit);
+        let SQLString = this.customTableFormater(baseSql, ...args);
 
         const result = await this.databaseEngine<T>(SQLString, queryFormat.data);
         return this.formatOutputData(result, query.offset, query.limit);
     }
 
-    protected async insert<P>(dataToInsert: P): Promise<boolean> {
+    public async insert<P>(dataToInsert: P): Promise<boolean> {
         const insertFormat = this.insertFormat<P>(dataToInsert);
         const SQLString = this.formatter('INSERT INTO %I (%s) VALUES (%s)', insertFormat.insert, insertFormat.values);
         await this.databaseEngine(SQLString, insertFormat.data);
         return true;
     }
 
-    protected async updateRecord<T>(where: DatabaseCoreQuery): Promise<boolean> {
+    public async updateRecord<T>(where: DatabaseCoreQuery): Promise<boolean> {
         const queryString = this.queryString(where);
         const SQLString = this.formatter('UPDATE %I SET %s WHERE %s', queryString.updateString, queryString.where);
         await this.databaseEngine<T>(SQLString, queryString.data);
         return true;
     }
 
-    protected async deleteRecord(id: number): Promise<boolean> {
+    public async deleteRecord(id: number): Promise<boolean> {
         await this.databaseEngine(this.formatter('DELETE FROM %I WHERE id = $1'), [id]);
         return true;
     }
 
-    protected async query<T>(sqlString: string, ...args: any) {
+    public async query<T>(sqlString: string, ...args: any) {
         const queryResult = await this.databaseEngine<T>(sqlString, args);
         return queryResult;
+    }
+    public async disconnectAll() {
+        await this.core.end();
     }
     //#endregion
 
     //#region Private
     private async databaseEngine<T>(queryString: string, data?: any[]): Promise<QueryResult<T>> {
+        console.log(queryString);
+        let con;
         try {
-            return await this.core.query<T>(queryString, data ? data : null);
+            con = await this.core.connect();
+            const out = await this.core.query<T>(queryString, data ? data : null);
+            console.log(out);
+            return out;
         } catch (error) {
             errorHandlers.errorSql('DatabaseCore.DatabaseEngine', error);
+        } finally {
+            con.release(true);
         }
     }
 
@@ -135,7 +154,7 @@ export class DatabaseCore {
         let i = 0;
         const dataOutput: any[] = [];
 
-        if (query.where.like) {
+        if (query.where?.like) {
             for (const key in query.where.like) {
                 const like = query.where.like[key];
                 like.forEach((l, i2) => {
@@ -170,7 +189,7 @@ export class DatabaseCore {
             selectString = '*, count(*) OVER() AS "totalRecords"';
         }
 
-        for (const value in query.where.equals) {
+        for (const value in query.where?.equals) {
             i++;
             if (Array.isArray(query.where[value])) {
                 whereString += `${value} IN (${query.where.equals[value].join(',')}) AND `;
@@ -184,10 +203,10 @@ export class DatabaseCore {
         const formatWhereParams = whereString.slice(0, -5);
         const output: ParamsType = {
             updateString: formatParams,
-            where: formatWhereParams,
-            select: selectString,
+            where: formatWhereParams.trim(),
+            select: selectString.trim(),
             data: dataOutput,
-            join: joinString,
+            join: joinString.trim(),
         };
         return output;
     }
@@ -207,7 +226,7 @@ export class DatabaseCore {
             records: result.rows.map((record: any) => {
                 const formattedRecord: any = {};
                 for (const key in record) {
-                    const foundedField = this.fields.find(f => f.toLowerCase() === key.toLowerCase());
+                    const foundedField = this.fields.find((f) => f.toLowerCase() === key.toLowerCase());
                     if (foundedField) {
                         formattedRecord[foundedField] = record[key];
                     }

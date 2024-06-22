@@ -1,6 +1,7 @@
-import { CookieOptions } from "express";
-import { machineIdSync } from "node-machine-id";
-import configManager from "~/managers/configManager";
+import { CookieOptions } from 'express';
+import { machineIdSync } from 'node-machine-id';
+import { DatabaseCoreQuery, QuerySearch } from '~/core/coreApiTypes';
+import configManager from '~/managers/configManager';
 
 class Tools {
     public parseQuery(queries: any): any {
@@ -52,9 +53,60 @@ class Tools {
             httpOnly: true,
             secure: configManager.getConfig.HTTPS,
             sameSite: 'strict',
-            domain: "localhost"
+            domain: 'localhost',
         };
         return options;
+    }
+
+    public  buildDbQuery<T, Q>(query: Q, queryStruct: QuerySearch<T>[], baseQuery: DatabaseCoreQuery<T>) {
+        const getIndex = (field: string) => queryStruct.findIndex((q) => q.field === field);
+        const out: DatabaseCoreQuery<T> = { ...baseQuery, where: { ...baseQuery.where } };
+
+        for (const key in query) {
+            switch (key.toLowerCase()) {
+                case 'sort': {
+                    const sorter = (query[key] as string).split(' ');
+                    const index = getIndex(sorter[0]);
+                    if (index > -1) {
+                        out.order = queryStruct[index].dbField;
+                        out.asc = sorter[1].toLowerCase() === 'asc';
+                    }
+                    break;
+                }
+                case 'limit':
+                case 'offset': {
+                    const numValue = Number(query[key]);
+                    if (!isNaN(numValue)) {
+                        out[key as 'limit' | 'offset'] = numValue;
+                    }
+                    break;
+                }
+                default: {
+                    const fieldIndex = getIndex(key);
+                    if (fieldIndex > -1) {
+                        const founded = queryStruct[fieldIndex];
+                        if (founded.typeWhere === 'LIKE') {
+                            if (!out.where.like) {
+                                out.where.like = {};
+                            }
+                            out.where.like[founded.dbField] = [query[key] as string];
+                        } else {
+                            if (!out.where.equals) {
+                                out.where.equals = {};
+                            }
+                            const values = (query[key] as string).split(',');
+                            if (values.length > 1) {
+                                out.where.equals[founded.dbField] = values as any;
+                            } else {
+                                out.where.equals[founded.dbField] = query[key] as any;
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return out;
     }
 }
 
