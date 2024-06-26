@@ -1,20 +1,20 @@
-import { Request, Response, Router } from 'express';
+import { Router } from 'express';
 import { AppParams, AppQuery, AppRequest, AppResponse } from '~/core/controllerBase';
-import { StandardError } from '~/core/standardError';
 import { OutputQueryRequest } from '~/core/typeCore';
+import { checkAuth } from '~/middlewares/auth';
 import Table from '~/module/table';
 
-class GenericController<T, P = any> {
+class TableController<T, P extends any> {
     public router: Router;
     public module: Table<T, P>;
     constructor(module: new () => Table<T, P>) {
         this.module = new module();
         this.router = Router();
-        this.router.get('/', this.getAll.bind(this));
-        this.router.get('/:id(\\d+)', this.getById.bind(this));
-        this.router.post('/', this.create.bind(this));
-        this.router.put('/:id(\\d+)', this.update.bind(this));
-        this.router.delete('/:id(\\d+)', this.delete.bind(this));
+        this.router.get('/', (req, res, next) => checkAuth(req, res, next, this.module.publicLevel), this.getAll.bind(this));
+        this.router.get('/:id(\\d+)', (req, res, next) => checkAuth(req, res, next, this.module.publicLevel), this.getById.bind(this));
+        this.router.post('/', (req, res, next) => checkAuth(req, res, next, this.module.publicLevelNew), this.create.bind(this));
+        this.router.put('/:id(\\d+)', (req, res, next) => checkAuth(req, res, next, this.module.publicLevelUpdate), this.update.bind(this));
+        this.router.delete('/:id(\\d+)', (req, res, next) => checkAuth(req, res, next, this.module.publicLevelDelete), this.delete.bind(this));
     }
 
     // @AccessLevel(UserAccessLevel.ADMIN)
@@ -49,4 +49,4 @@ class GenericController<T, P = any> {
     }
 }
 
-export default GenericController;
+export default TableController;

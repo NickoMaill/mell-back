@@ -72,6 +72,21 @@ class Table<T, P> {
     // -----------------------------------------------------
 
     // Méthodes publiques pour accéder aux méthodes protégées
+    public get publicLevel() {
+        return this.Level;
+    }
+    public get publicLevelNew() {
+        return this.LevelNew;
+    }
+    public get publicLevelUpdate() {
+        return this.LevelUpdate;
+    }
+    public get publicLevelDelete() {
+        return this.LevelDelete;
+    }
+    public get publicLevelExport() {
+        return this.LevelExport;
+    }
     public setRequest(req: AppRequest) {
         this.Request = req;
         this.Payload = req.body;

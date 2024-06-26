@@ -16,42 +16,38 @@ import adminController from './controllers/adminController';
 import session from 'express-session';
 import { v4 as uuid } from 'uuid';
 import { initSes } from './middlewares/session';
-import { checkAuth } from './middlewares/auth';
 import moment from 'moment';
 import showsController from './controllers/showsController';
 import socialMediaController from './controllers/socialMediaController';
 import logController from './controllers/logController';
-import { DatabaseCore } from './core/dataBaseCore';
+import configManager from './managers/configManager';
 
 const server = express();
 const PORT = process.env.PORT || 8000 || 8001;
-
 // #region MIDDLEWARE -> //////////////////////////////////////////
-// (async () => {
-//     await new DatabaseCore().disconnectAll();
-// })
 moment.locale("fr");
+server.use(express.urlencoded({ extended: true }));
 server.use(express.json({ limit: '10mb' }));
 server.use(express.static('public'));
-server.use(express.urlencoded({ extended: true, limit: '10mb' }));
 server.use(cors({
-    origin: 'http://localhost:3000',
+    origin: configManager.getConfig.FRONT_BASEURL,
     credentials: true
   }));
 server.use(cookieParser());
 server.use(morgan('dev'));
+
 server.use(sanitizeXss);
-server.use(helmet.contentSecurityPolicy({
-    directives: {
-        scriptSrc: [
-            "'self'", 
-            'https://cdn.jsdelivr.net', 
-            "unsafe-inline", 
-            "'nonce-YLNVC6eGpoz9BIwWyWTm50GXqOLqgilQ'", 
-            "https://cdnjs.cloudflare.com",
-        ],
-    }
-}));
+// server.use(helmet.contentSecurityPolicy({
+//     directives: {
+//         scriptSrc: [
+//             "'self'", 
+//             'https://cdn.jsdelivr.net', 
+//             "unsafe-inline", 
+//             "'nonce-YLNVC6eGpoz9BIwWyWTm50GXqOLqgilQ'", 
+//             "https://cdnjs.cloudflare.com",
+//         ],
+//     }
+// }));
 server.use(session({
     secret: uuid().replaceAll("-", ""),
     resave: false,
@@ -66,7 +62,7 @@ server.use(initSes);
 
 // #region ROUTES -> /////////////////////////////////////////////
 server.use('/init', defaultController.Router);
-server.use('/login', handlers.noCacheMiddleware, checkAuth, adminController.Router);
+server.use('/login', adminController.Router);
 server.use('/medias', mediasController.Router);
 server.use('/shows', showsController.router);
 server.use('/social', socialMediaController.router);
@@ -85,6 +81,12 @@ server.get("/test", async (_req: AppRequest, res: AppResponse) => {
     // await communicationManager.sendMfa("nicomaillols@gmail.com", "076543");
     res.json(true);
 });
+
+server.post('/test-form', (req, res) => {
+    console.log(req.body);
+    res.send(`Received form data: ${JSON.stringify(req.body)}`);
+});
+
 server.get('*', (_req: AppRequest, res: AppResponse) => {
     if (res.contentType('html')) {
         res.status(404).sendFile(path.join(__dirname, '/views/404.html'));

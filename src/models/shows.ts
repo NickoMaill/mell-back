@@ -12,6 +12,11 @@ export class Show extends BaseModel {
     startDate: Date;
     endDate: Date;
     schedule: Date;
+    description: string;
+    subDescription: string;
+    showOnLanding: boolean;
+    areaLink: string;
+    ticketLink: string;
 }
 
 export type ShowPayloadType = {

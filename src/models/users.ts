@@ -1,4 +1,4 @@
-import { BaseModel } from "~/core/typeCore";
+import { BaseModel, UserAccessLevel } from "~/core/typeCore";
 
 export class User extends BaseModel {
     public email: string;
@@ -6,7 +6,17 @@ export class User extends BaseModel {
     public lastOtp: string;
     public firstName: string;
     public lastName: string;
+    public levelAccess: UserAccessLevel;
 }
+
+export type UserApiModel = {
+    id: number;
+    name: string;
+    userLevel: UserAccessLevel;
+    email: string;
+    mobile: string;
+    token: string;
+};
 
 export type UserPayloadLogin = {
     username: string;

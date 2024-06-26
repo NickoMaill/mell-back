@@ -36,6 +36,16 @@ class Ses {
     public set DeviceId(value: string) { if (this.isSessionAvailable) this.session.ses.deviceId = value; }
     //#endregion
 
+    //#region Access Level
+    public get AccessLevel() { return this.isSessionAvailable ? this.session.ses.userAccess : UserAccessLevel.VISITOR; }
+    public set AccessLevel(value: UserAccessLevel) { if (this.isSessionAvailable) this.session.ses.userAccess = value; }
+    //#endregion
+
+    //#region User Mobile
+    public get UserMobile() { return this.isSessionAvailable ? this.session.ses.userMobile : null; }
+    public set UserMobile(value: string) { if (this.isSessionAvailable) this.session.ses.userMobile = value; }
+    //#endregion
+
     constructor() {}
 
     public static getInstance(): Ses {
@@ -47,18 +57,28 @@ class Ses {
         this.initValues(req);
         this.session = req.session; 
     }
-    public setUserInfo(id: number, email: string, needMfa: boolean, deviceId: string) {
+    public setUserInfo(id: number, email: string, needMfa: boolean, deviceId: string, level: UserAccessLevel, mobile: string) {
         this.UID = id;
         this.UserEmail = email;
         this.NeedMfa = needMfa;
         this.DeviceId = deviceId;
+        this.AccessLevel = level;
+        this.UserMobile = mobile
+    }
+    public clear() {
+        this.UID = null;
+        this.UserEmail = null;
+        this.DeviceId = null;
+        this.AccessLevel = UserAccessLevel.VISITOR;
+        this.UserMobile = null;
+        this.NeedMfa = false;
     }
     public exists(key: string) { return !!this.session[key]; }
     public set<T>(key: string, value: T) { this.session[key] = value; }
     public get<T>(key: string): T { return this.session[key]; }
     private get isSessionAvailable() { return !!this.session; } 
     private initValues(req: Request) {
-        if (!req.session.ses) {
+        if (!req || !req.session.ses) {
             req.session.ses = {
                 UID: null,
                 userAccess: UserAccessLevel.VISITOR,

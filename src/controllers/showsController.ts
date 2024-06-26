@@ -1,7 +1,7 @@
 import { Show, ShowPayloadType } from '~/models/shows';
-import GenericController from './tableController';
+import TableController from './tableController';
 import ShowsModule from '~/module/showsModule';
-    class ShowsController extends GenericController<Show, ShowPayloadType> {
+    class ShowsController extends TableController<Show, ShowPayloadType> {
         constructor() {
             super(ShowsModule);
         }

@@ -107,17 +107,15 @@ export class DatabaseCore {
 
     //#region Private
     private async databaseEngine<T>(queryString: string, data?: any[]): Promise<QueryResult<T>> {
-        console.log(queryString);
-        let con;
+        let con: PoolClient;
         try {
             con = await this.core.connect();
             const out = await this.core.query<T>(queryString, data ? data : null);
-            console.log(out);
             return out;
         } catch (error) {
             errorHandlers.errorSql('DatabaseCore.DatabaseEngine', error);
         } finally {
-            con.release(true);
+            con?.release(true);
         }
     }
 

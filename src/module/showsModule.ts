@@ -6,7 +6,7 @@ import Table from './table';
 class ShowsModule extends Table<Show, ShowPayloadType> {
     protected override Table = ApiTable.SHOWS;
     protected override Level = UserAccessLevel.VISITOR;
-    protected override LevelNew = UserAccessLevel.VISITOR;
+    protected override LevelNew = UserAccessLevel.ADMIN;
     protected override LevelUpdate = UserAccessLevel.ADMIN;
     protected override LevelDelete = UserAccessLevel.ADMIN;
     protected override LevelExport = UserAccessLevel.ADMIN;
@@ -17,13 +17,9 @@ class ShowsModule extends Table<Show, ShowPayloadType> {
     protected override DefaultSort: keyof Show = "id";
     protected override SqlFields: string[] = Object.keys(new Show());
 
-    protected override async queryOne(): Promise<void> {
-        
+    protected override async performUpdate(): Promise<void> {
+        console.log(this.Request.body);
     }
-    protected override async queryAll(): Promise<void> {
-        
-    }
-    protected override async performUpdate(): Promise<void> {}
     protected override async performNew(): Promise<void> {}
     protected override async performDelete(): Promise<void> {}
     // public --> start region /////////////////////////////////////////////

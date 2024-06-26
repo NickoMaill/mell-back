@@ -1,40 +1,22 @@
 import { NextFunction } from 'express';
 import { AppRequest, AppResponse } from '~/core/controllerBase';
+import Ses from '~/core/ses';
 import { StandardError } from '~/core/standardError';
+import { UserAccessLevel } from '~/core/typeCore';
 import AdminManager from '~/managers/adminManager';
-import configManager from '~/managers/configManager';
 
-export const checkAuth = async (req: AppRequest, res: AppResponse, next: NextFunction) => {
-    const urlData = new URL(req.originalUrl, `${configManager.getConfig.HTTPS ? "https" : "http"}://${req.headers.host}`);
-    const noCheckPath = ["/login/reset"];
-    const isLoginPage = urlData.pathname === "/login";
-    const isMfaPage = urlData.pathname === "/login/mfa";
+export const checkAuth = async (req: AppRequest, _res: AppResponse, next: NextFunction, level: UserAccessLevel = UserAccessLevel.ADMIN) => {
+    const noCheckPath = ['/login/reset'];
+    const ses = Ses.getInstance();
 
     if (!noCheckPath.includes(req.originalUrl)) {
-        try {
-            await AdminManager.checkRefresh(req.cookies["refresh"]);
-            if (isLoginPage || isMfaPage) {
-                res.status(302).send('<script nonce="YLNVC6eGpoz9BIwWyWTm50GXqOLqgilQ">window.location.href="http://localhost:3000/"</script>');
-                return;
+        if (level !== UserAccessLevel.VISITOR) {
+            await AdminManager.checkRefresh(req.cookies['refresh']);
+            if (ses.AccessLevel !== level) {
+                throw new StandardError('auth.checkAuth', 'UNAUTHORIZED', 'unauthorized', 'unauthorized action requested', 'unauthorized action requested');
             }
-            next();
-        } catch (err) {
-            let target = "";
-
-            if (err instanceof StandardError && err.errorCode === "need_otp") {
-                if (!isMfaPage) {
-                    AdminManager.sendOtp(req);
-                    res.redirect("/login/mfa" + target);
-                    return;
-                }
-            } else {
-                if (!isLoginPage && !isMfaPage) {
-                    res.redirect("/login" + target);
-                    return;
-                }
-            }
-            next();
         }
+        next();
     } else {
         next();
     }

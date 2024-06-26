@@ -1,10 +1,10 @@
 import { AppRequest, AppResponse } from "~/core/controllerBase";
 import socialManager from '~/managers/socialManager';
-import GenericController from "./tableController";
+import TableController from "./tableController";
 import { Post, PostPayload } from "~/models/posts";
 import FeedModule from "~/module/feedModule";
 
-class SocialMediaController extends GenericController<Post, PostPayload> {
+class SocialMediaController extends TableController<Post, PostPayload> {
     constructor() {
         super(FeedModule);
         this.router.get("/fetchPosts", this.fetchPosts);

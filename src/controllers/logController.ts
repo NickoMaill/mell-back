@@ -1,10 +1,10 @@
 import { Log } from "~/models/logs";
-import GenericController from "./tableController";
+import TableController from "./tableController";
 import LogsModule from "~/module/logsModule";
 import { AppParams, AppRequest, AppResponse } from "~/core/controllerBase";
 import { StandardError } from "~/core/standardError";
 
-class LogController extends GenericController<Log, null> {
+class LogController extends TableController<Log, null> {
     constructor() {
         super(LogsModule);
     }
