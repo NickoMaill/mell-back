@@ -1,4 +1,4 @@
-import { ApiTable, QuerySearch } from '~/core/coreApiTypes';
+import { ApiTable, DatabaseCoreQuery, QuerySearch } from '~/core/coreApiTypes';
 import { UserAccessLevel } from '~/core/typeCore';
 import { Show, ShowPayloadType } from '~/models/shows';
 import Table from './table';
@@ -18,7 +18,17 @@ class ShowsModule extends Table<Show, ShowPayloadType> {
     protected override SqlFields: string[] = Object.keys(new Show());
 
     protected override async performUpdate(): Promise<void> {
-        console.log(this.Request.body);
+        const payload = this.Request.body as ShowPayloadType;
+        
+        if (!isNaN(payload.lat)) payload.lat = parseFloat(payload.lat.toString());
+        if (!isNaN(payload.long)) payload.long = parseFloat(payload.long.toString());
+
+        const query: DatabaseCoreQuery<Show> = {
+            update: payload,
+            where: { equals : { id: this.Request.params.id } }
+        }
+        console.log(payload);
+        await this.db.updateRecord(query);
     }
     protected override async performNew(): Promise<void> {}
     protected override async performDelete(): Promise<void> {}

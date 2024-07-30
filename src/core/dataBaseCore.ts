@@ -10,7 +10,6 @@ export type DataBaseAppError = DatabaseError;
 export class DatabaseCore {
     //#region Constructor
     public readonly core: Pool;
-    public client: Client;
     public isConnected: boolean = true;
     private readonly table: ApiTable;
     private readonly formatter: (sql: string, ...args: any[]) => string;
@@ -27,7 +26,6 @@ export class DatabaseCore {
         });
         this.table = apiTable;
         this.fields = tableFields;
-        this.client = new Client();
         format.config();
         this.formatter = (sql, ...args) => format(sql, apiTable, ...args);
         this.customTableFormater = (sql, ...args) => format(sql, args[0], apiTable, ...args.slice(1));
@@ -42,6 +40,10 @@ export class DatabaseCore {
     public async getById<T>(id: number): Promise<OutputQueryRequest<T>> {
         const result = await this.databaseEngine<T>(this.formatter('SELECT *, count(*) OVER() AS "totalRecords" FROM %I WHERE id = $1'), [id]);
         return this.formatOutputData<T>(result);
+    }
+
+    public getClient() {
+        return new Client();
     }
 
     public async getByQuery<T>(query: DatabaseCoreQuery<T>): Promise<OutputQueryRequest<T>> {
@@ -87,6 +89,7 @@ export class DatabaseCore {
     public async updateRecord<T>(where: DatabaseCoreQuery): Promise<boolean> {
         const queryString = this.queryString(where);
         const SQLString = this.formatter('UPDATE %I SET %s WHERE %s', queryString.updateString, queryString.where);
+        console.log(SQLString);
         await this.databaseEngine<T>(SQLString, queryString.data);
         return true;
     }
@@ -109,13 +112,10 @@ export class DatabaseCore {
     private async databaseEngine<T>(queryString: string, data?: any[]): Promise<QueryResult<T>> {
         let con: PoolClient;
         try {
-            con = await this.core.connect();
             const out = await this.core.query<T>(queryString, data ? data : null);
             return out;
         } catch (error) {
             errorHandlers.errorSql('DatabaseCore.DatabaseEngine', error);
-        } finally {
-            con?.release(true);
         }
     }
 

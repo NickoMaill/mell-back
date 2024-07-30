@@ -1,18 +1,19 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { AppRequest, AppResponse } from '~/core/controllerBase';
 import logManager from '~/managers/logManager';
+import TableController from './tableController';
+import { Media, MediaPayloadType } from '~/models/media';
+import MediaModule from '~/module/mediaModule';
 
-class MediasController {
-    private readonly Route = Router();
+class MediasController extends TableController<Media, MediaPayloadType> {
     constructor() {
-        this.Route.get('/', this.init);
+        super(MediaModule)
+        this.router.get('/', this.init);
     }
     private init(_req: AppRequest, res: AppResponse) {
         logManager.setLog('Medias', 'default init route requested');
         res.json({ message: 'Default init route' });
-    }
-    public get Router() {
-        return this.Route;
     }
 }
 export default new MediasController();

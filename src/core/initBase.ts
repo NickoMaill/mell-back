@@ -45,9 +45,7 @@ class InitBase {
             }
             const dbCore = new DatabaseCore();
             try {
-                const con = await dbCore.core.connect();
-                console.log(`Connected to DB ${dbCore.client.database ?? ""} ✅`);
-                con.release(true);
+                console.log(`Connected to DB ${dbCore.getClient().database ?? ""} ✅`);
             } catch (err) {
                 if (err.code !== "ETIMEDOUT") {
                     await dbCore.core.end();

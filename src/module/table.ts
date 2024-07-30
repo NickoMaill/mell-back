@@ -23,20 +23,26 @@ class Table<T, P> {
     protected SqlFields: string[] = [];
     protected FormFields: FormField[] = [];
     protected SortCriteria: string = null;
+    protected EnableFile: boolean = false;
     // ---------------------------------------
     protected getData: OutputQueryRequest<T>;
     protected Request: AppRequest = null;
+    protected Payload: P = null;
+    protected db: DatabaseCore;
     // ------------- PRIVATE -----------------
-    private db: DatabaseCore;
-    protected Payload: P;
-
     protected validate(): { key: string; message: string } {
         return null;
     }
 
-    protected async performUpdate(): Promise<void> {}
-    protected async performNew(): Promise<void> {}
-    protected async performDelete(): Promise<void> {}
+    protected async performUpdate(): Promise<void> {
+        throw new StandardError("table.performUpdate", "BAD_REQUEST", "unknown_method", "unknown method requested");
+    }
+    protected async performNew(): Promise<void> {
+        throw new StandardError("table.performNew", "BAD_REQUEST", "unknown_method", "unknown method requested");
+    }
+    protected async performDelete(): Promise<void> {
+        throw new StandardError("table.performDelete", "BAD_REQUEST", "unknown_method", "unknown method requested");
+    }
 
     protected async queryOne(): Promise<void> {
         this.db = new DatabaseCore(this.Table, this.SqlFields);
@@ -89,11 +95,9 @@ class Table<T, P> {
     }
     public setRequest(req: AppRequest) {
         this.Request = req;
-        this.Payload = req.body;
     }
-
-    public setPayload(payload: P) {
-        this.Payload = payload;
+    public setPayload(p: P) {
+        this.Payload = p;
     }
 
     public async queryAllPublic() {
@@ -105,19 +109,25 @@ class Table<T, P> {
     }
 
     public async performNewPublic() {
+        this.db = new DatabaseCore(this.Table, this.SqlFields);
         await this.performNew();
     }
 
     public async performUpdatePublic() {
+        this.db = new DatabaseCore(this.Table, this.SqlFields);
         await this.performUpdate();
     }
 
     public async performDeletePublic() {
+        this.db = new DatabaseCore(this.Table, this.SqlFields);
         await this.performDelete();
     }
 
     public get Data() {
         return this.getData;
+    }
+    public get IsFileEnable() {
+        return this.EnableFile;
     }
 }
 

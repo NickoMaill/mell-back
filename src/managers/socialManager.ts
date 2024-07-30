@@ -1,7 +1,5 @@
 import fetch from "node-fetch";
-import { Post, PostPayload, PostsRootObject } from "~/models/posts";
-import feedModule from "~/module/feedModule";
-import { DatabaseCoreQuery } from "~/core/coreApiTypes";
+import { PostPayload, PostsRootObject } from "~/models/posts";
 import FeedModule from "~/module/feedModule";
 
 class SocialManager {
@@ -38,22 +36,23 @@ class SocialManager {
     }
 
     public async fetchAllInstagramPosts(): Promise<PostPayload[]> {
-        let posts = [];
+        let posts: PostPayload[] = [];
         let i = 0;
         let sortOrder = 0;
         let pageToken = "";
         while (i < 5) {
             const fetchedPosts = await this.fetchInstagramPosts(pageToken);
             pageToken = fetchedPosts.pageToken;
-            fetchedPosts.content.forEach(p => { p.sortOrder = sortOrder; sortOrder++ })
             posts = [...posts, ...fetchedPosts.content];
             i++;
         }
-        return posts;
+        posts = [...new Map(posts.map(p => [p.postId, p])).values()];
+        return posts
     }
 
     public async appendPostsInDB(posts: PostPayload[]) {
         const feed = new FeedModule();
+        feed.performDeletePublic();
         posts.forEach(async (p) => {
             feed.setPayload(p);
             await feed.performNewPublic();

@@ -11,5 +11,9 @@ export interface IConfigEnv {
     BREVO_ORDER_TEMPLATE_ID?;
     BREVO_SENDER?;
     BREVO_USER_MAIL?;
+    PHOTON_BASEURL?;
+    CLOUDINARY_NAME?;
+    CLOUDINARY_APIKEY?;
+    CLOUDINARY_SECRET?;
     [key: string]: any;
 }
