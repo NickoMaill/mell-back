@@ -59,6 +59,7 @@ class Table<T, P> {
             join: this.ExtraFrom,
             where: this.ExtraWhere,
         };
+        console.log(this.Request.query);
         const query = tools.buildDbQuery(this.Request.query, this.SearchContent, baseQuery);
         if (!query.order) {
             query.order = this.DefaultSort;

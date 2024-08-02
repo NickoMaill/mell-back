@@ -2,6 +2,7 @@ import { Router } from 'express';
 import multer, { Multer } from 'multer';
 import { AppParams, AppQuery, AppRequest, AppResponse } from '~/core/controllerBase';
 import { OutputQueryRequest } from '~/core/typeCore';
+import tools from '~/helpers/tools';
 import { checkAuth } from '~/middlewares/auth';
 import Table from '~/module/table';
 
@@ -37,13 +38,14 @@ class TableController<T, P extends any> {
 
     protected async create(req: AppRequest<P>, res: AppResponse<{ success: boolean } | any>) {
         this.module.setRequest(req);
+        this.module.setPayload(tools.parseQuery(req.body));
         await this.module.performNewPublic();
         res.status(201).json({ success: true });
     }
 
     protected async update(req: AppRequest<P>, res: AppResponse<{ success: boolean } | any>) {
         this.module.setRequest(req);
-        console.log("hello");
+        this.module.setPayload(tools.parseQuery(req.body));
         await this.module.performUpdatePublic();
         res.status(200).json({ success: true });
     }

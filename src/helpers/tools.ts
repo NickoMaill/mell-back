@@ -6,15 +6,18 @@ import configManager from '~/managers/configManager';
 class Tools {
     public parseQuery(queries: any): any {
         for (const query in queries) {
-            if (!isNaN(queries[query])) {
+            if (queries[query] === "") {
+                queries[query] = null;
+            }
+            if (!isNaN(queries[query]) && queries[query] !== "" && queries[query] !== null) {
                 if (queries[query].includes('.')) {
                     queries[query] = parseFloat(queries[query]);
                 } else {
                     queries[query] = parseInt(queries[query]);
                 }
             }
-            if (queries[query] === ('true' || 'false')) {
-                queries[query] = Boolean(queries[query]);
+            if ((queries[query] ?? "").toString().toLowerCase() === 'true' || (queries[query] ?? "").toString().toLowerCase() === 'false') {
+                queries[query] = JSON.parse(queries[query]);
             }
         }
         return queries;

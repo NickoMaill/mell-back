@@ -5,18 +5,27 @@ import { StandardError } from '~/core/standardError';
 class CloudinaryModule {
     protected readonly _client: typeof cloudinary.v2.uploader;
     constructor() {
+        const cloudName = configManager.getConfig.CLOUDINARY_NAME;
+        const apiKey = configManager.getConfig.CLOUDINARY_APIKEY;
+        const apiSecret = configManager.getConfig.CLOUDINARY_SECRET;
+    
+        if (!cloudName || !apiKey || !apiSecret) {
+            throw new Error("Cloudinary configuration is missing");
+        }
+    
         cloudinary.v2.config({
-            cloud_name: configManager.getConfig.CLOUDINARY_CLOUDNAME,
-            api_key: configManager.getConfig.CLOUDINARY_APIKEY,
-            api_secret: configManager.getConfig.CLOUDINARY_SECRET,
+          cloud_name: cloudName,
+          api_key: apiKey,
+          api_secret: apiSecret,
         });
+
         this._client = cloudinary.v2.uploader;
     }
 
     public async uploadAsset(imagePath: string, data: UploadApiOptions): Promise<UploadApiResponse> {
         const upload = await this._client.upload(imagePath, data, (err, _res) => {
             if (err) {
-                throw new StandardError('cloudinaryModule.uploadAsset', 'BAD_REQUEST', 'error_happened', 'upload error happened', `${JSON.stringify(err)}`);
+                throw new StandardError('cloudinaryModule.uploadAsset', 'BAD_REQUEST', 'error_happened', 'upload error happened', err.message, false, err);
             }
         });
 

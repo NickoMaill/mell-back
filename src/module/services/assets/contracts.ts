@@ -1,4 +1,4 @@
-import { MediaStatus } from "~/models/media";
+import { MediaGroupEnum, MediaStatus } from "~/models/media";
 
 export type CloudinaryResponseApi = {
     id: string;
@@ -42,14 +42,16 @@ export type CloudinaryUploadRequest = {
 
 export interface IMediaDto {
     url?: string;
-    name?: string;
     type?: string;
     size?: number;
     width?: number;
     height?: number;
     isVideo?: boolean;
     status?: MediaStatus;
-    providerId?: string;
+    externalId?: string;
+    sortOrder?: number;
+    mediaGroupId?: number;
+    mediaGroup?: MediaGroupEnum;
 }
 
 export enum AssetsInstanceEnum {

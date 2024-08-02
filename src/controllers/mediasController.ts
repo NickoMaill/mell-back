@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { AppRequest, AppResponse } from '~/core/controllerBase';
+import { AppQuery, AppRequest, AppResponse } from '~/core/controllerBase';
 import logManager from '~/managers/logManager';
 import TableController from './tableController';
 import { Media, MediaPayloadType } from '~/models/media';

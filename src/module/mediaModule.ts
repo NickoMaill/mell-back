@@ -19,9 +19,12 @@ class MediaModule extends Table<Media, MediaPayloadType> {
     protected override SearchContent: QuerySearch<Media>[] = [
         { field: "isVideo", dbField: "isVideo", typeWhere: "EQUALS", typeClause: "EQUALS"},
         { field: "type", dbField: "type", typeWhere: "EQUALS", typeClause: "EQUALS"},
+        { field: "mediaGroup", dbField: "mediaGroup", typeWhere: "EQUALS", typeClause: "EQUALS"},
+        { field: "mediaGroupId", dbField: "mediaGroupId", typeWhere: "EQUALS", typeClause: "EQUALS"},
     ];
     protected override DefaultSort: keyof Media = "id";
     protected override SqlFields: string[] = Object.keys(new Media());
+    protected override EnableFile: boolean = true;
 
     // public --> start region /////////////////////////////////////////////
     // public --> end region ///////////////////////////////////////////////
@@ -31,24 +34,26 @@ class MediaModule extends Table<Media, MediaPayloadType> {
         if (!this.Payload.name) {
             this.Payload.name = this.nameGenerator(15);
         }
+        console.log(this.Payload.isVideo ? "video" : "image")
         const resourceType = this.Payload.isVideo ? "video" : "image";
         const bufferedImg = this.Request.file?.buffer.toString('base64');
         const uploadOptions: UploadApiOptions = {
             public_id: this.Payload.name,
             resource_type: resourceType,
+            allowed_formats: ["png", "mp4", "jpg", "webp"]
         };
-
+        console.log(this.Request.file.mimetype);
         const upload: UploadApiResponse = await cloudinaryModule.uploadAsset(`data:${this.Request.file.mimetype};base64,${bufferedImg}`, uploadOptions);
         const IMediaInfo: IMediaDto = {
             url: upload.secure_url,
-            name: upload.public_id,
             type: upload.format,
             size: upload.bytes,
             width: upload.width,
             height: upload.height,
             isVideo: this.Payload.isVideo,
-            status: this.Payload.status,
-            providerId: upload.asset_id,
+            externalId: upload.asset_id,
+            mediaGroup: this.Payload.mediaGroup,
+            mediaGroupId: this.Payload.mediaGroupId
         };
 
         await this.db.insert(IMediaInfo).catch(async (err: DataBaseAppError) => {
