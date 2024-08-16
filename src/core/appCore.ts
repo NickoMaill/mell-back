@@ -1,6 +1,6 @@
-import { QueryResult } from "pg";
-import { DatabaseCore } from "./dataBaseCore";
-import { ApiTable } from "./coreApiTypes";
+import { QueryResult } from 'pg';
+import { DatabaseCore } from './dataBaseCore';
+import { ApiTable } from './coreApiTypes';
 
 class App {
     public static async query(sql: string, ...args: any[]): Promise<QueryResult> {
@@ -10,3 +10,23 @@ class App {
 }
 
 export default App;
+
+export class StringBuilder {
+    private parts: string[];
+    constructor() {
+        this.parts = [];
+    }
+
+    public append(part: string) {
+        this.parts.push(part);
+        return this;
+    }
+
+    public toString() {
+        return this.parts.join('');
+    }
+    public clear() {
+        this.parts = [];
+        return this;
+    }
+}

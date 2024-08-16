@@ -18,12 +18,12 @@ class TableController<T, P extends any> {
         this.router = Router();
         this.router.get('/', (req, res, next) => checkAuth(req, res, next, this.module.publicLevel), this.getAll.bind(this));
         this.router.get('/:id(\\d+)', (req, res, next) => checkAuth(req, res, next, this.module.publicLevel), this.getById.bind(this));
-        this.router.post('/', (req, res, next) => checkAuth(req, res, next, this.module.publicLevelNew), (this.module.IsFileEnable ? this.upload.single('file') : (_res, _req, next) => next()), this.create.bind(this));
-        this.router.put('/:id(\\d+)', (req, res, next) => checkAuth(req, res, next, this.module.publicLevelUpdate), (this.module.IsFileEnable ? this.upload.single('file') : (_res, _req, next) => next()), this.update.bind(this));
+        this.router.post('/', (req, res, next) => checkAuth(req, res, next, this.module.publicLevelNew), this.module.IsFileEnable ? this.upload.single('file') : (_res, _req, next) => next(), this.create.bind(this));
+        this.router.put('/:id(\\d+)', (req, res, next) => checkAuth(req, res, next, this.module.publicLevelUpdate), this.module.IsFileEnable ? this.upload.single('file') : (_res, _req, next) => next(), this.update.bind(this));
         this.router.delete('/:id(\\d+)', (req, res, next) => checkAuth(req, res, next, this.module.publicLevelDelete), this.delete.bind(this));
     }
 
-    // @AccessLevel(UserAccessLevel.ADMIN)
+    //@AccessLevel(this.ADMIN)
     protected async getAll(req: AppQuery, res: AppResponse<OutputQueryRequest<T> | any>) {
         this.module.setRequest(req);
         await this.module.queryAllPublic();

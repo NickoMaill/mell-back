@@ -1,22 +1,23 @@
 import { CookieOptions } from 'express';
 import { machineIdSync } from 'node-machine-id';
+import { StringBuilder } from '~/core/appCore';
 import { DatabaseCoreQuery, QuerySearch } from '~/core/coreApiTypes';
 import configManager from '~/managers/configManager';
 
 class Tools {
     public parseQuery(queries: any): any {
         for (const query in queries) {
-            if (queries[query] === "") {
+            if (queries[query] === '') {
                 queries[query] = null;
             }
-            if (!isNaN(queries[query]) && queries[query] !== "" && queries[query] !== null) {
+            if (!isNaN(queries[query]) && queries[query] !== '' && queries[query] !== null) {
                 if (queries[query].includes('.')) {
                     queries[query] = parseFloat(queries[query]);
                 } else {
                     queries[query] = parseInt(queries[query]);
                 }
             }
-            if ((queries[query] ?? "").toString().toLowerCase() === 'true' || (queries[query] ?? "").toString().toLowerCase() === 'false') {
+            if ((queries[query] ?? '').toString().toLowerCase() === 'true' || (queries[query] ?? '').toString().toLowerCase() === 'false') {
                 queries[query] = JSON.parse(queries[query]);
             }
         }
@@ -61,7 +62,7 @@ class Tools {
         return options;
     }
 
-    public  buildDbQuery<T, Q>(query: Q, queryStruct: QuerySearch<T>[], baseQuery: DatabaseCoreQuery<T>) {
+    public buildDbQuery<T, Q>(query: Q, queryStruct: QuerySearch<T>[], baseQuery: DatabaseCoreQuery<T>) {
         const getIndex = (field: string) => queryStruct.findIndex((q) => q.field === field);
         const out: DatabaseCoreQuery<T> = { ...baseQuery, where: { ...baseQuery.where } };
 
@@ -110,6 +111,31 @@ class Tools {
             }
         }
         return out;
+    }
+
+    public mergeObject<T>(from: T, to: any): T {
+        for (const key in from) {
+            if (Object.keys(to).includes(key)) {
+                from[key] = to[key];
+            }
+        }
+        return from;
+    }
+
+    public SetGenericActionLog(formField: string[], to: any, from: any = null) {
+        const result = new StringBuilder();
+        formField.forEach((f) => {
+            if (Object.keys(to).includes(f) && (from === null || from[f] !== to[f]) && from !== null) {
+                result.append(`${f} : `);
+                if (f.toLowerCase() === 'password') {
+                    result.append('XXXXXX (XXXXXX)');
+                } else {
+                    result.append(`${to[f]}`);
+                    if (from !== null) result.append(` (${from[f]})`);
+                }
+            }
+        });
+        return result.toString();
     }
 }
 

@@ -62,6 +62,6 @@ export class StandardError<T extends any = {}> extends Error {
         if (detailedMessage) this._detailedMessage = detailedMessage;
 
         if (data) this._data = data;
-        if (this._log) logManager.setLog("", `Message :<br/>&emsp;&emsp;${message}${detailedMessage && detailedMessage !== "" ? `<br/><br/>Details :<br/>&emsp;&emsp;${detailedMessage}` : ""}`, key)
+        if (this._log) logManager.setLog('', `Message :<br/>&emsp;&emsp;${message}${detailedMessage && detailedMessage !== '' ? `<br/><br/>Details :<br/>&emsp;&emsp;${detailedMessage}` : ''}`, key);
     }
 }

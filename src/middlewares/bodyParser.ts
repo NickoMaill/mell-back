@@ -1,6 +1,6 @@
-import { NextFunction } from "express";
-import { AppRequest, AppResponse } from "~/core/controllerBase";
-import tools from "~/helpers/tools";
+import { NextFunction } from 'express';
+import { AppRequest, AppResponse } from '~/core/controllerBase';
+import tools from '~/helpers/tools';
 
 export const bodyParser = (req: AppRequest, _res: AppResponse, next: NextFunction) => {
     for (const entry in req.body) {
@@ -16,10 +16,9 @@ export const bodyParser = (req: AppRequest, _res: AppResponse, next: NextFunctio
         }
     }
     next();
-}
+};
 
 export const queryParser = (req: AppRequest, res: AppResponse, next: NextFunction) => {
     tools.parseQuery(req.query);
     next();
-}
-
+};

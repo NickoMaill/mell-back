@@ -30,15 +30,15 @@ class UserModule extends DatabaseCore {
     }
     public async InsertToken(payload: TokenPayload): Promise<boolean> {
         const fields = Object.keys(payload);
-        const args = fields.map((_f, i) => `$${i+1}`);
-        const data = fields.map(f => payload[f]);
-        const sql = `INSERT INTO Tokens (${fields.join(",")}) VALUES (${args.join(",")})`;
+        const args = fields.map((_f, i) => `$${i + 1}`);
+        const data = fields.map((f) => payload[f]);
+        const sql = `INSERT INTO Tokens (${fields.join(',')}) VALUES (${args.join(',')})`;
         await this.query(sql, ...data);
         return true;
     }
 
     public async getTokenInfo(token: string) {
-        const record = await this.query<UserToken>("SELECT * FROM Tokens WHERE token = $1", token);
+        const record = await this.query<UserToken>('SELECT * FROM Tokens WHERE token = $1', token);
         if (record.rowCount !== 1) {
             return null;
         }
@@ -46,7 +46,7 @@ class UserModule extends DatabaseCore {
     }
 
     public async isDeviceAuthorized(deviceId: string, userId: number): Promise<boolean> {
-        const token = await this.query<UserToken>("SELECT * FROM Tokens WHERE userId = $1 AND deviceId = $2 AND isDeviceAuthorized = true", userId, deviceId);
+        const token = await this.query<UserToken>('SELECT * FROM Tokens WHERE userId = $1 AND deviceId = $2 AND isDeviceAuthorized = true', userId, deviceId);
         if (token.rowCount < 1) {
             return false;
         }
@@ -59,14 +59,14 @@ class UserModule extends DatabaseCore {
         if (otp.rowCount === 0) return null;
         return otp.rows[0];
     }
-    
+
     public async getToken(token: string): Promise<UserToken> {
-        const tokenData = await this.query<UserToken>("SELECT * FROM Tokens WHERE token = $1 ORDER BY AddedAt DESC LIMIT 1", token);
+        const tokenData = await this.query<UserToken>('SELECT * FROM Tokens WHERE token = $1 ORDER BY AddedAt DESC LIMIT 1', token);
         if (tokenData.rowCount === 0) return null;
         return tokenData.rows[0];
     }
     public async refreshOtp(id: number): Promise<boolean> {
-        await this.query("UPDATE Tokens SET lastOtp = CURRENT_TIMESTAMP WHERE id = $1", id);
+        await this.query('UPDATE Tokens SET lastOtp = CURRENT_TIMESTAMP WHERE id = $1', id);
         return true;
     }
     public async updateOtp(otp: string, id: number): Promise<boolean> {

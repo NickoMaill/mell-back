@@ -1,7 +1,7 @@
 export type PhotonMapType = {
     features: PhotonMapDetailsType[];
-    type: string; 
-}
+    type: string;
+};
 
 export type PhotonMapDetailsType = {
     geometry: {

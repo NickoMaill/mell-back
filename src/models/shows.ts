@@ -1,4 +1,5 @@
-import { BaseModel } from "~/core/typeCore";
+import { BaseModel } from '~/core/typeCore';
+import { Media } from './media';
 
 export class Show extends BaseModel {
     title: string;
@@ -19,6 +20,12 @@ export class Show extends BaseModel {
     ticketLink: string;
 }
 
+export type FullShow = Show & {
+    media: Media[];
+    cover: Media;
+    comments: Comment[];
+};
+
 export type ShowPayloadType = {
     title: string;
     place: string;
@@ -32,7 +39,7 @@ export type ShowPayloadType = {
     endDate: Date;
     schedule: Date;
     showUrl: string;
-}
+};
 
 export class Comment extends BaseModel {
     showId: number;
@@ -49,4 +56,5 @@ export type CommentPayload = {
     rating: number;
     description: string;
     date: Date;
-}
+    rawDate: string;
+};

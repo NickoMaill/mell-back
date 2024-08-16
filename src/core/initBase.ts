@@ -26,10 +26,10 @@ class InitBase {
                 if (info.path === '*') {
                     info.path = 'error';
                 }
-                info.methods.forEach(r => {
+                info.methods.forEach((r) => {
                     const nameRoute: string = `[${info.path.split('/')[0] !== 'init' && info.path.split('/')[0] !== 'error' ? info.path.split('/')[1] : info.path}]`;
                     console.info(`${nameRoute.padEnd(50, ' ')}`, logColors.FgYellow, `${r.padEnd(10)}`, logColors.Reload, `${'⇨'.padEnd(10, ' ')} "${info.path}"`);
-                })
+                });
             });
             const dateStr = new Date().toISOString();
             console.warn('');
@@ -38,21 +38,14 @@ class InitBase {
             console.warn(logColors.FgMagenta, `[${dateStr}] ||===========================================||`, logColors.Reload);
             console.warn('');
 
+            const dbCore = new DatabaseCore();
+            dbCore.ping();
+
             if (configManager.getConfig.NODE_ENV === 'production') {
                 console.log(`production server listening on Port : ${PORT} ✅`);
             } else {
                 console.log(`listening on http://localhost:${PORT} ✅`);
             }
-            const dbCore = new DatabaseCore();
-            try {
-                console.log(`Connected to DB ${dbCore.getClient().database ?? ""} ✅`);
-            } catch (err) {
-                if (err.code !== "ETIMEDOUT") {
-                    await dbCore.core.end();
-                }
-                throw new StandardError("initLogs", "FATAL", "no_db", "unable to connect to database", "", err);
-            }
-            
         }
     }
 }

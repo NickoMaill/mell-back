@@ -1,12 +1,12 @@
 import { PhotonMapDetailsType } from './../module/services/map/contracts/photonType';
-import { Router } from "express";
-import { AppQuery, AppRequest, AppResponse } from "~/core/controllerBase";
+import { Router } from 'express';
+import { AppQuery, AppRequest, AppResponse } from '~/core/controllerBase';
 import photonModule from '~/module/services/map/photonModule';
 
 class MapController {
     private readonly Route = Router();
     constructor() {
-        this.Route.get("/search", this.getAddress);
+        this.Route.get('/search', this.getAddress);
     }
 
     // private --> start region ////////////////////////////////////////////
@@ -21,6 +21,5 @@ class MapController {
         return this.Route;
     }
     // public --> end region ///////////////////////////////////////////////
-
 }
 export default new MapController();

@@ -164,3 +164,38 @@ CREATE TABLE Feed (
 
 ALTER TABLE MEDIAS ADD COLUMN mediaGroup VARCHAR(25) NOT NULL;
 ALTER TABLE MEDIAS ADD COLUMN mediaGroupId INTEGER;
+
+
+CREATE TABLE NewsPaperProvider (
+	ID SERIAL PRIMARY KEY,
+  name VARCHAR(80),
+  mediaId INTEGER,
+  AddedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UpdatedAt TIMESTAMP,
+  CONSTRAINT fk_media FOREIGN KEY (mediaId) REFERENCES Medias(id)
+);
+
+CREATE TRIGGER update_updatedAt
+    BEFORE UPDATE
+    ON newsPaperProvider
+    FOR EACH ROW
+EXECUTE PROCEDURE update_updatedAt();
+
+CREATE TABLE Articles (
+	ID SERIAL PRIMARY KEY,
+  title VARCHAR(150),
+  newpaperId INTEGER,
+  description VARCHAR(200),
+  url varchar(400),
+  attachementUrl VARCHAR(500),
+  attachementType INTEGER,
+  AddedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UpdatedAt TIMESTAMP,
+  CONSTRAINT fk_newspaper FOREIGN KEY (newpaperid) REFERENCES NewsPaperProvider(id)
+);
+
+CREATE TRIGGER update_updatedAt
+    BEFORE UPDATE
+    ON Articles
+    FOR EACH ROW
+EXECUTE PROCEDURE update_updatedAt();

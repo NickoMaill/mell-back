@@ -2,6 +2,7 @@ export type InsertFormatOut = {
     insert: string;
     values: string;
     data: any[];
+    uniq?: string;
 };
 
 export type ParamsType = {
@@ -12,15 +13,15 @@ export type ParamsType = {
     join?: string;
 };
 
-export type Like<T> = {
+export type Like<T = any> = {
     [K in keyof T]?: string[];
 };
 
-export type DatabaseCoreQuery<T = any> = {
-    join?: { reference: string; target: string; join: ApiTable; type: 'INNER' | 'LEFT' | '' }[];
+export type DatabaseCoreQuery<T = any, P = any> = {
+    join?: { reference: string; target: string; join: ApiTable; type: 'INNER' | 'LEFT' | ''; joinTarget?: ApiTable }[];
     select?: (keyof T)[];
     like?: string[];
-    update?: any;
+    update?: P;
     where?: {
         like?: Like<T>;
         equals?: Partial<T>;
@@ -34,8 +35,8 @@ export type DatabaseCoreQuery<T = any> = {
 export type QuerySearch<T> = {
     field: string;
     dbField: keyof T;
-    typeWhere: "LIKE" | "EQUALS";
-    typeClause: "IN" | "EQUALS";
+    typeWhere: 'LIKE' | 'EQUALS';
+    typeClause: 'IN' | 'EQUALS';
 };
 
 export const initCoreQuery: DatabaseCoreQuery<any> = {
@@ -51,9 +52,13 @@ export const initCoreQuery: DatabaseCoreQuery<any> = {
 };
 
 export enum ApiTable {
-    MEDIAS = "medias",
-    USERS = "users",
-    LOGS = "logs",
-    SHOWS = "shows",
-    FEED = "feed",
+    MEDIAS = 'medias',
+    USERS = 'users',
+    LOGS = 'logs',
+    SHOWS = 'shows',
+    FEED = 'feed',
+    COMMENT = 'comments',
+    ARTICLES = 'articles',
+    NEWSPAPER = 'newspaperprovider',
+    DATATEXT = 'datatext',
 }

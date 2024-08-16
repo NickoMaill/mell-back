@@ -17,7 +17,7 @@ export class BaseModel {
     public id: number;
     public addedAt: Date;
     public updatedAt: Date;
-};
+}
 
 export enum UserAccessLevel {
     ADMIN = 0,
@@ -31,5 +31,5 @@ export function AccessLevel(level: UserAccessLevel): MethodDecorator {
             target.__accessLevels = {};
         }
         target.__accessLevels[propertyKey] = level;
-    }
+    };
 }

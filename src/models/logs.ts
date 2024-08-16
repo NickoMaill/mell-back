@@ -1,4 +1,4 @@
-import { BaseModel } from "~/core/typeCore";
+import { BaseModel } from '~/core/typeCore';
 export class Log extends BaseModel {
     public action: string;
     public description: string;
@@ -15,4 +15,4 @@ export type LogPayload = {
     call: string;
     userId: number;
     ipAddress: string;
-}
+};

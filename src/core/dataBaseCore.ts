@@ -4,6 +4,7 @@ import format from 'pg-format';
 import { ApiTable, DatabaseCoreQuery, InsertFormatOut, ParamsType } from '~/core/coreApiTypes';
 import { OutputQueryRequest } from './typeCore';
 import errorHandlers from './errorHandlers';
+import { StandardError } from './standardError';
 
 export type DataBaseAppError = DatabaseError;
 
@@ -60,7 +61,7 @@ export class DatabaseCore {
         let baseSql = 'SELECT %s FROM %I';
         args.push(queryFormat.select);
         if (queryFormat.join.length > 0) {
-            baseSql += ' ‰s';
+            baseSql += ' %s';
             args.push(queryFormat.join);
         }
         if (queryFormat.where.length > 0) {
@@ -72,18 +73,30 @@ export class DatabaseCore {
             args.push(query.order.toString().toLowerCase(), orderMode);
         }
         baseSql += ' OFFSET %s LIMIT %s';
+        console.log(baseSql);
         args.push(query.offset, query.limit);
+        console.log(args);
         let SQLString = this.customTableFormater(baseSql, ...args);
-
+        console.log(SQLString);
         const result = await this.databaseEngine<T>(SQLString, queryFormat.data);
         return this.formatOutputData(result, query.offset, query.limit);
     }
 
-    public async insert<P>(dataToInsert: P): Promise<boolean> {
-        const insertFormat = this.insertFormat<P>(dataToInsert);
-        const SQLString = this.formatter('INSERT INTO %I (%s) VALUES (%s)', insertFormat.insert, insertFormat.values);
-        await this.databaseEngine(SQLString, insertFormat.data);
-        return true;
+    /**
+     *
+     * @param dataToInsert Payload to insert
+     * @param uniq uniq fields to check before insert
+     * @returns
+     */
+    public async insert<P, T = any>(dataToInsert: P, uniq?: (keyof P)[]): Promise<OutputQueryRequest<T>> {
+        const insertFormat = this.insertFormat<P>(dataToInsert, uniq);
+        let SQLString = this.formatter('INSERT INTO %I (%s) VALUES (%s) RETURNING *', insertFormat.insert, insertFormat.values);
+
+        if (uniq && uniq.length > 0) {
+            SQLString = this.formatter('INSERT INTO %I (%s) SELECT %s WHERE NOT EXISTS (SELECT 1 FROM %I WHERE %s) RETURNING *', insertFormat.insert, insertFormat.values, this.table, insertFormat.uniq);
+        }
+        const inserted = await this.databaseEngine<T>(SQLString, insertFormat.data);
+        return this.formatOutputData(inserted);
     }
 
     public async updateRecord<T>(where: DatabaseCoreQuery): Promise<boolean> {
@@ -106,11 +119,21 @@ export class DatabaseCore {
     public async disconnectAll() {
         await this.core.end();
     }
+    public async ping(): Promise<void> {
+        try {
+            await this.core.connect();
+            await this.query('SELECT 1');
+            console.log(`Connected to DB ${this.getClient().database ?? ''} ✅`);
+            await this.core.end();
+            return;
+        } catch (err) {
+            throw new StandardError('db.ping', 'FATAL', 'no_db', 'unable connect to db', err.message, err);
+        }
+    }
     //#endregion
 
     //#region Private
     private async databaseEngine<T>(queryString: string, data?: any[]): Promise<QueryResult<T>> {
-        let con: PoolClient;
         try {
             const out = await this.core.query<T>(queryString, data ? data : null);
             return out;
@@ -119,12 +142,13 @@ export class DatabaseCore {
         }
     }
 
-    private insertFormat<T>(obj: T): InsertFormatOut {
+    private insertFormat<T>(obj: T, uniq?: (keyof T)[]): InsertFormatOut {
         const params = Object.keys(obj);
         const dataOutput: any[] = [];
 
         let i = 0;
         let values = '';
+        let uniqClause = '';
 
         for (const value in obj) {
             i += 1;
@@ -132,11 +156,21 @@ export class DatabaseCore {
             dataOutput.push(obj[value]);
         }
 
+        if (uniq && uniq.length > 0) {
+            uniq.forEach((u) => {
+                i += 1;
+                if (uniqClause.length > 0) uniqClause += ' AND ';
+                uniqClause += `${u as string} = $${i}`;
+                dataOutput.push(obj[u]);
+            });
+        }
+
         const formatValues = values.slice(0, -1);
         const output: InsertFormatOut = {
             insert: params.join(','),
             values: formatValues,
             data: dataOutput,
+            uniq: uniqClause,
         };
 
         return output;
@@ -174,7 +208,7 @@ export class DatabaseCore {
         if (query.join) {
             query.join.forEach((join) => {
                 // const alias = joinAlias[index];
-                joinString += `${join.type} JOIN ${join.join} ON ${join.join}.${join.reference} = ${this.table}.${join.target} `;
+                joinString += `${join.type} JOIN ${join.join} ON ${join.join}.${join.reference} = ${join.joinTarget ? join.joinTarget : this.table}.${join.target} `;
             });
         }
 
@@ -219,7 +253,7 @@ export class DatabaseCore {
         return filteredArray;
     }
 
-    private formatOutputData<T>(result: QueryResult, offset?: number, limit?: number): OutputQueryRequest<T> {
+    public formatOutputData<T>(result: QueryResult, offset?: number, limit?: number): OutputQueryRequest<T> {
         const output: any = {
             records: result.rows.map((record: any) => {
                 const formattedRecord: any = {};

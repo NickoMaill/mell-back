@@ -1,6 +1,6 @@
 import { AppRequest } from '~/core/controllerBase';
 import { ApiTable, DatabaseCoreQuery, Like, QuerySearch } from '~/core/coreApiTypes';
-import { DatabaseCore } from '~/core/dataBaseCore';
+import { DataBaseAppError, DatabaseCore } from '~/core/dataBaseCore';
 import { StandardError } from '~/core/standardError';
 import { OutputQueryRequest, UserAccessLevel } from '~/core/typeCore';
 import tools from '~/helpers/tools';
@@ -13,11 +13,11 @@ class Table<T, P> {
     protected LevelUpdate: UserAccessLevel = this.Level;
     protected LevelDelete: UserAccessLevel = this.Level;
     protected LevelExport: UserAccessLevel = this.Level;
-    protected ExtraSelect: (keyof T)[] = null;
+    protected ExtraSelect: string[] = null;
     protected DefaultSort: keyof T = null;
     protected DefaultAsc: boolean = true;
     protected DefaultLimit: number = 10;
-    protected ExtraFrom: { reference: string; target: string; join: ApiTable; type: 'INNER' | 'LEFT' | '' }[] = null;
+    protected ExtraFrom: { reference: string; target: string; join: ApiTable; type: 'INNER' | 'LEFT' | ''; joinTarget?: ApiTable }[] = null;
     protected ExtraWhere: { like?: Like<T>; equals?: Partial<T> } = null;
     protected SearchContent: QuerySearch<T>[] = [];
     protected SqlFields: string[] = [];
@@ -27,40 +27,54 @@ class Table<T, P> {
     // ---------------------------------------
     protected getData: OutputQueryRequest<T>;
     protected Request: AppRequest = null;
-    protected Payload: P = null;
     protected db: DatabaseCore;
     // ------------- PRIVATE -----------------
-    protected validate(): { key: string; message: string } {
-        return null;
+    public Payload: P = null;
+
+    constructor(req?: AppRequest) {
+        if (req) {
+            this.Request = req;
+        }
     }
 
+    protected async validate(): Promise<void> {}
+
     protected async performUpdate(): Promise<void> {
-        throw new StandardError("table.performUpdate", "BAD_REQUEST", "unknown_method", "unknown method requested");
+        throw new StandardError('table.performUpdate', 'BAD_REQUEST', 'unknown_method', 'unknown method requested');
     }
     protected async performNew(): Promise<void> {
-        throw new StandardError("table.performNew", "BAD_REQUEST", "unknown_method", "unknown method requested");
+        throw new StandardError('table.performNew', 'BAD_REQUEST', 'unknown_method', 'unknown method requested');
     }
     protected async performDelete(): Promise<void> {
-        throw new StandardError("table.performDelete", "BAD_REQUEST", "unknown_method", "unknown method requested");
+        throw new StandardError('table.performDelete', 'BAD_REQUEST', 'unknown_method', 'unknown method requested');
     }
 
     protected async queryOne(): Promise<void> {
         this.db = new DatabaseCore(this.Table, this.SqlFields);
-        this.getData = await this.db.getById(this.Request.params.id);
+        this.getData = await this.db.getById<T>(this.Request.params.id);
     }
 
     protected async queryAll() {
         await this.tableQuery();
     }
 
-    private async tableQuery(): Promise<void> {
-        const baseQuery: DatabaseCoreQuery = {
-            select: this.ExtraSelect,
-            join: this.ExtraFrom,
-            where: this.ExtraWhere,
-        };
-        console.log(this.Request.query);
-        const query = tools.buildDbQuery(this.Request.query, this.SearchContent, baseQuery);
+    protected async searchByQuery(query: DatabaseCoreQuery<T>): Promise<OutputQueryRequest<T>> {
+        await this.tableQuery(query);
+        return this.getData;
+    }
+
+    private async tableQuery(query: DatabaseCoreQuery<T> = null): Promise<void> {
+        if (!query) {
+            if (this.ExtraSelect && this.ExtraSelect.length > 0) {
+                this.ExtraSelect.unshift(this.Table + '.*');
+            }
+            const baseQuery: DatabaseCoreQuery = {
+                select: this.ExtraSelect,
+                join: this.ExtraFrom,
+                where: this.ExtraWhere,
+            };
+            query = tools.buildDbQuery(this.Request.query, this.SearchContent, baseQuery);
+        }
         if (!query.order) {
             query.order = this.DefaultSort;
             query.asc = this.DefaultAsc;
@@ -74,6 +88,17 @@ class Table<T, P> {
 
         this.db = new DatabaseCore(this.Table, this.SqlFields);
         this.getData = await this.db.getByQuery(query);
+    }
+
+    protected async Log(deleteAction: boolean = false) {
+        const oldGetData = !this.getData || this.getData.records.length < 1 ? null : this.getData.records[0];
+        await this.queryOne();
+
+        if (deleteAction) {
+            return tools.SetGenericActionLog(this.SqlFields, this.getData, null);
+        } else {
+            return tools.SetGenericActionLog(this.SqlFields, this.getData, oldGetData);
+        }
     }
 
     // -----------------------------------------------------
@@ -110,18 +135,26 @@ class Table<T, P> {
     }
 
     public async performNewPublic() {
+        await this.validate();
         this.db = new DatabaseCore(this.Table, this.SqlFields);
         await this.performNew();
     }
 
     public async performUpdatePublic() {
+        await this.validate();
+        await this.queryOne();
         this.db = new DatabaseCore(this.Table, this.SqlFields);
         await this.performUpdate();
     }
 
     public async performDeletePublic() {
+        await this.queryOne();
         this.db = new DatabaseCore(this.Table, this.SqlFields);
         await this.performDelete();
+    }
+
+    public async searchByQueryPublic(query: DatabaseCoreQuery<T>) {
+        return await this.searchByQuery(query);
     }
 
     public get Data() {

@@ -6,7 +6,7 @@ import { StandardError } from '../core/standardError';
 import { AppRequest, AppResponse } from '../core/controllerBase';
 class Handlers {
     public async errorHandler(err: any, _req: AppRequest, res: AppResponse, _next: NextFunction) {
-        console.log("error handler", err);
+        console.log('error handler', err);
         if (err instanceof StandardError) {
             const error = err as StandardError<any>;
 
@@ -56,7 +56,7 @@ class Handlers {
         res.set('Expires', '0');
         res.set('Surrogate-Control', 'no-store');
         next();
-    };
+    }
 }
 
 export default new Handlers();

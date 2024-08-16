@@ -24,14 +24,14 @@ class AdminManager {
 
     public static setInvalidOtpForm(message: string) {
         let htmlContent = fs.readFileSync(path.join(__dirname, '../views/mfa.html'), { encoding: 'utf-8' });
-        htmlContent = htmlContent.replaceAll("{0-1}", "is-invalid");
-        htmlContent = htmlContent.replace("&nbsp;", message);
+        htmlContent = htmlContent.replaceAll('{0-1}', 'is-invalid');
+        htmlContent = htmlContent.replace('&nbsp;', message);
         return htmlContent;
     }
 
     public static async checkLogin(req: AppRequest<UserPayloadLogin>): Promise<string> {
-        if (req.body.username === "" || !req.body.username) throw new StandardError('AdminManager.checkLogin', 'BAD_REQUEST', 'email_required', 'email is required', 'email is required to login');
-        if (req.body.password === "" || !req.body.password) throw new StandardError('AdminManager.checkLogin', 'BAD_REQUEST', 'password_required', 'password is required', 'password is required to login');
+        if (req.body.username === '' || !req.body.username) throw new StandardError('AdminManager.checkLogin', 'BAD_REQUEST', 'email_required', 'email is required', 'email is required to login');
+        if (req.body.password === '' || !req.body.password) throw new StandardError('AdminManager.checkLogin', 'BAD_REQUEST', 'password_required', 'password is required', 'password is required to login');
         // get user admin info
         const founded = await userModule.getOneByEmail(req.body.username);
         // if not founded refuse access
@@ -45,8 +45,8 @@ class AdminManager {
         const deviceId = tools.getDeviceId();
 
         const isDeviceAuthorized = await userModule.isDeviceAuthorized(deviceId, founded.id);
-        const token = jwt.sign({ id: founded.id, isDeviceAuthorized: isDeviceAuthorized, deviceId: deviceId }, configManager.getConfig.SECRET_REFRESH, { expiresIn: req.body.remember ? "1y" : "1d" });
-        
+        const token = jwt.sign({ id: founded.id, isDeviceAuthorized: isDeviceAuthorized, deviceId: deviceId }, configManager.getConfig.SECRET_REFRESH, { expiresIn: req.body.remember ? '1y' : '1d' });
+
         // get Session values instances
         const ses = Ses.getInstance();
         // update ses values
@@ -55,7 +55,7 @@ class AdminManager {
         ses.NeedMfa = true;
         ses.DeviceId = deviceId;
         ses.UID = founded.id;
-        
+
         // init token payload
         // const tokenPayload: TokenPayload = {
         //     userId: ses.UID,
@@ -86,11 +86,11 @@ class AdminManager {
             deviceId: ses.DeviceId,
             userIp: req.socket.remoteAddress,
             token: hashedOtp,
-            type: "otp",
-            expires: moment().add(10, "minutes").toDate(),
+            type: 'otp',
+            expires: moment().add(10, 'minutes').toDate(),
         };
         userModule.InsertToken(tokenPayload);
-        
+
         // return token and deviceId, to put it in some cookies
         await communicationManager.sendMfa(ses.UserEmail, otp);
     }
@@ -98,16 +98,16 @@ class AdminManager {
     public static async checkOtp(otp: string, token: string): Promise<boolean> {
         const otpData = await userModule.getLastOtp();
         const tokenData = await userModule.getToken(token);
-        if (!otpData) throw new StandardError("adminManager.checkOtp", "BAD_REQUEST", "invalid_otp", "otp est invalide");
+        if (!otpData) throw new StandardError('adminManager.checkOtp', 'BAD_REQUEST', 'invalid_otp', 'otp est invalide');
         const compare = await bcrypt.compare(otp, otpData.token);
-        if (!compare) throw new StandardError("adminManager.checkOtp", "BAD_REQUEST", "invalid_otp", "otp invalide");
-        if (otpData.expires < new Date()) throw new StandardError("adminManager.checkOtp", "BAD_REQUEST", "otp_expired", "otp expiré");
+        if (!compare) throw new StandardError('adminManager.checkOtp', 'BAD_REQUEST', 'invalid_otp', 'otp invalide');
+        if (otpData.expires < new Date()) throw new StandardError('adminManager.checkOtp', 'BAD_REQUEST', 'otp_expired', 'otp expiré');
         await userModule.refreshOtp(tokenData.id);
         return true;
     }
 
     public static async checkRefresh(token: string) {
-        if (token === "" || !token) throw new StandardError('adminManager.checkRefresh', 'BAD_REQUEST', 'no_session', `token not active`, 'token provided is not active');
+        if (token === '' || !token) throw new StandardError('adminManager.checkRefresh', 'BAD_REQUEST', 'no_session', `token not active`, 'token provided is not active');
         let decoded: { id: number; isDeviceAuthorized: boolean; deviceId: string } = null;
         jwt.verify(token, configManager.getConfig.SECRET_REFRESH, (err: jwt.JsonWebTokenError, dec: typeof decoded) => {
             if (err) {
@@ -125,17 +125,17 @@ class AdminManager {
             }
         });
         if (!decoded) {
-            throw new StandardError("adminManager.checkRefresh", "BAD_REQUEST", "no_content", "no content", "no token data");
+            throw new StandardError('adminManager.checkRefresh', 'BAD_REQUEST', 'no_content', 'no content', 'no token data');
         }
         if (decoded.id) {
             const founded = await userModule.getOneById(decoded.id);
             // const foundedToken = await userModule.getToken(token);
             if (!founded) {
-                throw new StandardError("adminManager.checkRefresh", "UNAUTHORIZED", "no_session", "no session found", "no session fond with id : " + decoded.id);
+                throw new StandardError('adminManager.checkRefresh', 'UNAUTHORIZED', 'no_session', 'no session found', 'no session fond with id : ' + decoded.id);
             }
             const ses = Ses.getInstance();
             // const needMfa = moment(foundedToken.lastOtp).add(1, "day").toDate() < new Date();
-            ses.setUserInfo(founded.id, founded.email, false, decoded.deviceId, founded.levelAccess, "");
+            ses.setUserInfo(founded.id, founded.email, false, decoded.deviceId, founded.levelAccess, '');
             // if (ses.NeedMfa) {
             //     throw new StandardError("adminManager.checkRefresh", "UNAUTHORIZED", "need_mfa", "user need 2 MFA", "User need 2MFA to access protected resources");
             // }
@@ -144,7 +144,7 @@ class AdminManager {
 
     public static async getAccess(): Promise<string> {
         const ses = Ses.getInstance();
-        const access = jwt.sign({ id: ses.UID }, configManager.getConfig.SECRET_REFRESH, { expiresIn:  "30m" });
+        const access = jwt.sign({ id: ses.UID }, configManager.getConfig.SECRET_REFRESH, { expiresIn: '30m' });
         return access;
     }
 

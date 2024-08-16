@@ -1,4 +1,4 @@
-import { BaseModel, UserAccessLevel } from "~/core/typeCore";
+import { BaseModel, UserAccessLevel } from '~/core/typeCore';
 
 export class User extends BaseModel {
     public email: string;
@@ -22,7 +22,7 @@ export type UserPayloadLogin = {
     username: string;
     password: string;
     remember: boolean;
-}
+};
 
 export class UserToken extends BaseModel {
     public lastOtp: Date;
@@ -37,6 +37,6 @@ export type TokenPayload = {
     userAgent: string;
     userId: number;
     isDeviceAuthorized?: boolean;
-    type: "otp" | "refresh";
+    type: 'otp' | 'refresh';
     expires: Date;
-}
+};

@@ -9,7 +9,7 @@
         "build": "chmod + ./buildCommand.sh && ./buildCommand.sh",
         "docker": "docker-compose --env-file .env.development.local up -d",
         "start": "node dist/index.js",
-        "pretty": "prettier --write \"**/*.{json,ts,tsx,scss,yml}\""
+        "format": "prettier --write \"**/*.{json,ts,tsx,scss,yml}\""
     },
     "repository": {
         "type": "",

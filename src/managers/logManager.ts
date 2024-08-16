@@ -25,10 +25,7 @@ class LogManager {
     public async setLog(action: string, description: string, call?: string, target?: string): Promise<void>;
     public async setLog(action: string, description: string, call?: string, target?: string): Promise<void> {
         const ses = Ses.getInstance();
-        App.query(
-            "INSERT INTO Logs (action, description, target, call, userId, ipAddress) VALUES ($1, $2, NULLIF($3, ''), $4, $5, $6)",
-            action, description, target, call, ses.UID, ses.IpAddress
-        );
+        App.query("INSERT INTO Logs (action, description, target, call, userId, ipAddress) VALUES ($1, $2, NULLIF($3, ''), $4, $5, $6)", action, description, target, call, ses.UID, ses.IpAddress);
     }
 }
 

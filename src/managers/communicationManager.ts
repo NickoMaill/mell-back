@@ -104,7 +104,7 @@ class CommunicationManager {
         const engine = new BrevoModule(MailInstanceTypeEnum.TRANSACTIONAL);
         const emailInfo: TransactionalEmailType = {
             to: [{ email: to }],
-            subject: "Mell Admin : authentification a deux facteurs",
+            subject: 'Mell Admin : authentification a deux facteurs',
             htmlContent: `
             <p>Bonjour</p>
             <p>Une connexion a été initié sur l'interface administrateur du site mellhumour.com.</p>
@@ -113,8 +113,8 @@ class CommunicationManager {
             <p style="font-size: 2rem; font-weight: bold; text-align: center; margin-top: 1rem; margin-bottom: 3rem;">${otp}</p>
             <span>Merci,</span><br/>
             <span>L'équipe support mellhumour.com,</span>
-            `
-        }
+            `,
+        };
         await engine.sendTransactionalEmail(emailInfo);
     }
 }

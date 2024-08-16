@@ -13,13 +13,13 @@ class AdminController {
         this.Route.post('/', this.login);
         this.Route.get('/refresh', checkAuth, this.refresh);
         this.Route.post('/logout', checkAuth, this.logout);
-        this.Route.post("/test-form", this.test);
+        this.Route.post('/test-form', this.test);
         // this.Route.post('/mfa', upload.none(), this.checkOtp);
         // this.Route.get('/resendOtp', this.resendOtp);
     }
     private async login(req: AppRequest<UserPayloadLogin>, res: AppResponse) {
         const token = await adminManager.checkLogin(req);
-        const expires = req.body.remember ? moment().add(1, "years").toDate() : moment().add(1, "days").toDate();
+        const expires = req.body.remember ? moment().add(1, 'years').toDate() : moment().add(1, 'days').toDate();
         const ses = Ses.getInstance();
         const userInfo: UserApiModel = {
             id: ses.UID,
@@ -28,14 +28,14 @@ class AdminController {
             userLevel: ses.AccessLevel,
             mobile: ses.UserMobile,
             token: null,
-        }
+        };
         res.cookie('refresh', token, tools.getCookieOptions(expires));
         res.json(userInfo);
-    } 
+    }
 
     public async refresh(_req: AppRequest, res: AppResponse) {
         const access = await adminManager.getAccess();
-        res.json({ token: access, expires: moment().add(30, "minutes").toDate().getTime() });
+        res.json({ token: access, expires: moment().add(30, 'minutes').toDate().getTime() });
     }
     public test(req, res) {
         console.log(req.body);
@@ -43,7 +43,7 @@ class AdminController {
     }
     public async logout(_req: AppRequest, res: AppResponse) {
         await adminManager.clearSession();
-        res.clearCookie("refresh");       
+        res.clearCookie('refresh');
         res.json({ success: true });
     }
 

@@ -11,7 +11,7 @@ class ConfigManager {
         });
         this.__env = {
             NODE_ENV: process.env.NODE_ENV,
-            SHOW_ERROR_DETAILS: process.env.SHOW_ERROR_DETAILS === "true",
+            SHOW_ERROR_DETAILS: process.env.SHOW_ERROR_DETAILS === 'true',
             SECRET_REFRESH: process.env.APP_REFRESH_SECRET,
             ACCESS_SECRET: process.env.APP_ACCESS_SECRET,
             BREVO_APIKEY: process.env.APP_BREVO_APIKEY,
@@ -21,7 +21,7 @@ class ConfigManager {
             BREVO_USER_MAIL: process.env.APP_BREVO_USER_MAIL,
             FRONT_BASEURL: process.env.APP_FRONT_BASEURL,
             API_BASEURL: process.env.APP_API_BASEURL,
-            HTTPS: process.env.HTTPS === "true",
+            HTTPS: process.env.HTTPS === 'true',
             PHOTON_BASEURL: process.env.APP_PHOTON_BASEURL,
             CLOUDINARY_NAME: process.env.APP_CLOUDINARY_NAME,
             CLOUDINARY_APIKEY: process.env.APP_CLOUDINARY_APIKEY,

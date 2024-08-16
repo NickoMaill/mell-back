@@ -13,10 +13,10 @@ class FeedModule extends Table<Post, PostPayload> {
     protected override LevelDelete = UserAccessLevel.ADMIN;
     protected override LevelExport = UserAccessLevel.ADMIN;
     protected override SearchContent: QuerySearch<Post>[] = [
-        { field: "id", dbField: "id", typeWhere: "EQUALS", typeClause: "EQUALS"},
-        { field: "postId", dbField: "postId", typeWhere: "EQUALS", typeClause: "EQUALS"},
+        { field: 'id', dbField: 'id', typeWhere: 'EQUALS', typeClause: 'EQUALS' },
+        { field: 'postId', dbField: 'postId', typeWhere: 'EQUALS', typeClause: 'EQUALS' },
     ];
-    protected override DefaultSort: keyof Post = "date";
+    protected override DefaultSort: keyof Post = 'date';
     protected override DefaultAsc: boolean = false;
     protected override DefaultLimit: number = 5;
     protected override SqlFields: string[] = Object.keys(new Post());
@@ -25,7 +25,7 @@ class FeedModule extends Table<Post, PostPayload> {
         await this.db.insert<PostPayload>(this.Payload);
     }
     protected override async performDelete(): Promise<void> {
-        await App.query("DELETE FROM Feed");
+        await App.query('DELETE FROM Feed');
     }
 
     // public --> start region /////////////////////////////////////////////

@@ -8,15 +8,15 @@ class CloudinaryModule {
         const cloudName = configManager.getConfig.CLOUDINARY_NAME;
         const apiKey = configManager.getConfig.CLOUDINARY_APIKEY;
         const apiSecret = configManager.getConfig.CLOUDINARY_SECRET;
-    
+
         if (!cloudName || !apiKey || !apiSecret) {
-            throw new Error("Cloudinary configuration is missing");
+            throw new Error('Cloudinary configuration is missing');
         }
-    
+
         cloudinary.v2.config({
-          cloud_name: cloudName,
-          api_key: apiKey,
-          api_secret: apiSecret,
+            cloud_name: cloudName,
+            api_key: apiKey,
+            api_secret: apiSecret,
         });
 
         this._client = cloudinary.v2.uploader;

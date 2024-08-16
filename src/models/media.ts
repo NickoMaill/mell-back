@@ -24,7 +24,7 @@ export interface MediaPayloadType {
     mediaGroup: MediaGroupEnum;
     mediaGroupId?: number;
     isMain?: boolean;
-};
+}
 
 export enum MediaType {
     JPEG = 'jpeg',
@@ -39,6 +39,7 @@ export enum MediaStatus {
 }
 
 export enum MediaGroupEnum {
-    SHOWS = "show",
-    CARROUSEL = "carrousel"
+    SHOWS = 'show',
+    CARROUSEL = 'carrousel',
+    NEWSPAPER = 'newsPaper',
 }
